@@ -1,12 +1,42 @@
+
+# Python
 __pycache__/
 *.py[cod]
+*.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
 *.egg-info/
-.venv/
-.pytest_cache/
-.DS_Store
+.installed.cfg
+*.egg
 
-# Datos científicos y outputs generados
+# Virtual Environments
+.venv
+env/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data & Outputs (CRITICAL: Do not track large HDF5 or generated PNGs)
 data/raw/*.hdf5
 output/*.png
 docs/*.png
 *.hdf5
+
+# Jupyter
+.ipynb_checkpoints/

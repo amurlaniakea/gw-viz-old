@@ -4,16 +4,22 @@ Herramienta científica para análisis reproducible de datos abiertos de ondas g
 
 > *«Tecnósfera al servicio de la Biósfera.» — «La Paz Es El Camino.»*
 
-## Demostración Científica Real
+## ⚠️ Nota Importante sobre GitHub Pages
 
-Esta herramienta descarga datos crudos de [GWOSC](https://www.gwosc.org/) mediante gwpy/gwosc y genera informes visuales de alta calidad usando matplotlib y scipy.
+Este proyecto ha evolucionado de una demo web visual a una **biblioteca de análisis científico rigurosa**.
+Por lo tanto, la demostración interactiva en [amurlaniakea.github.io/gw-viz](https://amurlaniakea.github.io/gw-viz/) ya no está disponible.
+El valor real reside en el **código Python ejecutable** que analiza datos reales de LIGO.
 
+## Demostración de Capacidad Científica
+
+Esta herramienta descarga datos crudos de [GWOSC](https://www.gwosc.org/) mediante / y genera informes visuales de alta calidad usando  y .
 
 *Figura: Pipeline completo mostrando señal bruta (ruido LIGO), zoom al merger (chirp real) y espectro de potencia (PSD).*
+*(La imagen se genera localmente en output/GW150914_report.png al ejecutar el script)*
 
 ## Características Clave
 
-- **Datos Reales**: Integración directa con gwosc para acceso transparente a archivos HDF5 de LIGO/Virgo.
+- **Datos Reales**: Integración directa con  para acceso transparente a archivos HDF5 de LIGO/Virgo.
 - **DSP Riguroso**: Implementación de Welch Method para estimación de PSD y cálculo aproximado de SNR.
 - **Visualización Editorial**: Gráficos de 3 paneles listos para publicaciones o docencia universitaria.
 - **Reproducibilidad**: Scripts CLI deterministas y notebooks Jupyter interactivos.
