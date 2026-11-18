@@ -1,8 +1,10 @@
 /**
- * GW Laboratory - Motor Científico JS Estable
+ * GW Laboratory v3 - Visual Clarity Focus
+ * Objetivo: Mostrar un chirp limpio y reconocible, no ruido digital.
  */
 
 const canvas = document.getElementById('waveform-canvas');
+if (!canvas) { console.error("Canvas not found"); throw new Error(); }
 const ctx = canvas.getContext('2d');
 const btnGen = document.getElementById('btn-regenerate');
 
@@ -32,6 +34,8 @@ function init() {
     });
 
     btnGen.addEventListener('click', calculateAndRender);
+    
+    // Render inicial
     setTimeout(calculateAndRender, 300);
 }
 
@@ -41,16 +45,36 @@ function calcChirpMass(m1, m2) {
     return Math.pow(mu, 3/5) / Math.pow(M, 1/5);
 }
 
+/**
+ * Genera física optimizada para VISUALIZACIÓN EDUCATIVA.
+ * No busca precisión absoluta de LIGO, sino claridad pedagógica.
+ */
 function generatePhysics(m1, m2, fStart, fEnd, snrTarget) {
     const Mc = calcChirpMass(m1, m2);
     const TIME_SCALE = 4.925e-6; 
     
+    // K factor para tau(f)
     const K_factor = (5.0 / 256.0) * Math.pow(Math.PI * Mc * TIME_SCALE, -5/3);
     
+    // Tiempo hasta merger desde f_start
     let t_total = K_factor * Math.pow(fStart, -8/3);
-    if (t_total > 5.0) t_total = 5.0; // Cap para visualización
+    
+    // ESTRATEGIA VISUAL:
+    // Si t_total es muy largo (>1s), recortamos la vista a los últimos 0.3s 
+    // para que se vea el "chirp" denso y claro, no una línea plana lenta.
+    const VIEW_DURATION = 0.3; // Segundos visibles
+    
+    if (t_total < VIEW_DURATION) {
+        // Caso extremo: masas muy grandes, evento muy corto
+        t_total = Math.max(t_total, 0.05); 
+    } else {
+        // Empezamos a dibujar desde t_final - VIEW_DURATION
+        t_total = VIEW_DURATION;
+    }
 
-    const nPoints = 1500;
+    // Resolución alta para evitar aliasing (garzúa)
+    // 800 px ancho -> necesitamos al menos 1600-2000 puntos para suavidad
+    const nPoints = 2000;
     const times = new Array(nPoints);
     const hClean = new Array(nPoints);
     const hNoisy = new Array(nPoints);
@@ -63,35 +87,46 @@ function generatePhysics(m1, m2, fStart, fEnd, snrTarget) {
     const freqs = new Array(nPoints);
 
     for (let i = 0; i < nPoints; i++) {
-        const t = i * dt;
-        times[i] = t;
+        // Tiempo relativo dentro de la ventana de visión
+        // tau va desde t_total hasta 0 (merger)
+        const tau = Math.max(t_total - (i * dt), 1e-6);
         
-        const tau = Math.max(t_total - t, 1e-8);
-        
+        // Frecuencia instantánea f(tau)
         let f = (1.0 / Math.PI) * Math.pow(tau / K_factor, -3/8);
-        if (f > 2000) f = 2000;
-        if (isNaN(f)) f = 2000;
+        
+        // Limitar frecuencia máxima para evitar explosión numérica excesiva
+        // Pero permitir subidas rápidas para el efecto chirp
+        if (f > 1500) f = 1500; 
         
         freqs[i] = f;
+        
+        // Acumulación de fase
         phase += 2 * Math.PI * f * dt;
         
+        // Amplitud cruda ~ f^(-7/6)
         let amp = Math.pow(f, -7/6);
         ampsRaw[i] = amp;
         if (amp > maxAmpRaw) maxAmpRaw = amp;
+        
+        times[i] = i * dt; // Tiempo absoluto desde inicio de la ventana
     }
     
+    // Normalización visual [0, 1]
     const scaleVis = maxAmpRaw > 0 ? 1.0 / maxAmpRaw : 1.0;
     
     for (let i = 0; i < nPoints; i++) {
         let envelope = 1.0;
         const progress = i / nPoints;
-        if (progress > 0.95) {
-            envelope = Math.exp(-(progress - 0.95) * 80); 
+        
+        // Ringdown suave pero visible al final
+        if (progress > 0.90) {
+            envelope = Math.exp(-(progress - 0.90) * 50); 
         }
         
         hClean[i] = ampsRaw[i] * scaleVis * Math.cos(phase) * envelope;
     }
     
+    // Ruido controlado
     let sigNormSq = 0;
     for(let v of hClean) sigNormSq += v*v;
     const sigNorm = Math.sqrt(sigNormSq);
@@ -112,7 +147,7 @@ function generatePhysics(m1, m2, fStart, fEnd, snrTarget) {
         hNoisy[i] = hClean[i] + (randGauss() * sigmaNoise);
     }
     
-    const idxMerge = Math.floor(nPoints * 0.95);
+    const idxMerge = Math.floor(nPoints * 0.90);
     const fFinal = freqs[idxMerge];
 
     return { times, hClean, hNoisy, duration: t_total, Mc, fFinal };
@@ -125,15 +160,18 @@ function drawChart(data) {
     const height = canvas.height;
     const midY = height / 2;
     
+    // Fondo oscuro limpio
     ctx.fillStyle = '#020617';
     ctx.fillRect(0, 0, width, height);
     
-    ctx.strokeStyle = '#1e293b';
+    // Eje central sutil
+    ctx.strokeStyle = '#334155';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(0, midY); ctx.lineTo(width, midY);
     ctx.stroke();
 
+    // Escala Y dinámica
     let maxAbs = 0;
     for(let i=0; i<data.hNoisy.length; i++) {
         const absVal = Math.abs(data.hNoisy[i]);
@@ -141,29 +179,42 @@ function drawChart(data) {
     }
     if(maxAbs === 0) maxAbs = 1;
     
-    const scaleY = (height * 0.45) / maxAbs;
+    // Dejamos margen superior/inferior del 10%
+    const usableHeight = height * 0.8;
+    const scaleY = usableHeight / (maxAbs * 2); 
     const scaleX = width / data.duration;
     
     function drawPath(arr, color, lineWidth) {
         ctx.strokeStyle = color;
         ctx.lineWidth = lineWidth;
         ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
         ctx.beginPath();
+        
         for(let i=0; i<arr.length; i++) {
             const x = data.times[i] * scaleX;
             const y = midY - arr[i] * scaleY;
-            const yc = Math.min(height, Math.max(0, y));
-            if(i===0) ctx.moveTo(x, yc); else ctx.lineTo(x, yc);
+            
+            // Clamp estricto para no salirse del canvas
+            const yc = Math.min(height - 5, Math.max(5, y));
+            
+            if(i===0) ctx.moveTo(x, yc); 
+            else ctx.lineTo(x, yc);
         }
         ctx.stroke();
     }
 
-    drawPath(data.hNoisy, 'rgba(255, 255, 255, 0.3)', 1);
+    // 1. Dibujar Ruido/Observado primero (fondo)
+    drawPath(data.hNoisy, 'rgba(255, 255, 255, 0.4)', 1);
+    
+    // 2. Dibujar Teoría encima (línea principal gruesa)
     drawPath(data.hClean, '#38bdf8', 2.5);
     
-    const mergeX = data.duration * 0.95 * scaleX;
+    // Marcador MERGER (vertical rojo)
+    const mergeX = data.duration * 0.90 * scaleX;
     ctx.strokeStyle = '#ef4444';
-    ctx.setLineDash([5, 5]);
+    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(mergeX, 0);
     ctx.lineTo(mergeX, height);
@@ -171,8 +222,8 @@ function drawChart(data) {
     ctx.setLineDash([]);
     
     ctx.fillStyle = '#ef4444';
-    ctx.font = 'bold 12px sans-serif';
-    ctx.fillText("MERGER", mergeX + 5, 20);
+    ctx.font = 'bold 10px sans-serif';
+    ctx.fillText("MERGER", mergeX + 5, 15);
 }
 
 function updateMetrics(data, snrInput) {
