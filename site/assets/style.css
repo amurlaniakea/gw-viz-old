@@ -358,3 +358,70 @@ footer {
   color: var(--color-accent);
   text-decoration: underline;
 }
+
+/* --- Mathematical Rendering Styles --- */
+.math-display {
+  font-family: 'Cambria Math', 'Times New Roman', serif;
+  font-size: 1.4rem;
+  color: #f1f5f9;
+  margin: 15px 0;
+  padding: 10px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.var-script {
+  font-style: italic;
+  font-weight: bold;
+  color: var(--color-theory);
+}
+
+.eq-label {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+
+.equation-group {
+  margin-bottom: 20px;
+  border-left: 3px solid var(--color-accent);
+  padding-left: 15px;
+}
+
+/* Native CSS Fraction Implementation */
+.fraction {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  margin: 0 5px;
+  line-height: 1.2;
+}
+
+.numerator {
+  border-bottom: 1px solid currentColor;
+  padding: 0 4px 2px;
+}
+
+.denominator {
+  padding: 2px 4px 0;
+}
+
+sup, sub {
+  font-size: 0.7em;
+  vertical-align: baseline;
+  position: relative;
+}
+
+sup { top: -0.5em; }
+sub { bottom: -0.5em; }
+
+/* Ensure italics for variables in formulas */
+.math-display em {
+  font-style: italic;
+  color: #cbd5e1;
+}
