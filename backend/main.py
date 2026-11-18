@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 BASE_DIR = Path(__file__).resolve().parent
-STATIC_DIR = BASE_DIR / "static"
+SITE_DIR = BASE_DIR.parent / "site"
 
 
 @asynccontextmanager
@@ -39,10 +39,13 @@ def health():
 
 @app.get("/", include_in_schema=False)
 def index():
-    if STATIC_DIR.exists() and (STATIC_DIR / "index.html").exists():
-        return FileResponse(STATIC_DIR / "index.html")
-    return {"message": "Frontend not found."}
+    # Servimos el index.html desde la carpeta site/
+    index_file = SITE_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
+    return {"message": "Frontend not found in site/"}
 
 
-if STATIC_DIR.exists():
-    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+# Montar assets estáticos de site/ (css, js, etc.)
+if SITE_DIR.exists():
+    app.mount("/", StaticFiles(directory=SITE_DIR, html=True), name="site")

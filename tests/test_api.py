@@ -12,10 +12,13 @@ def test_health():
     assert data["service"] == "gw-lab"
 
 
-def test_root_serves_index():
+def test_root_serves_new_lab_ui():
     client = TestClient(app)
-    # La raíz debe servir el HTML del sitio si existe
     response = client.get("/")
     assert response.status_code == 200
-    # Verificamos que contiene el título esperado
-    assert "GW Lab" in response.text or "waveform-canvas" in response.text
+    
+    # El nuevo HTML debe contener el canvas y el título GW Laboratory
+    text = response.text
+    assert "GW Laboratory" in text or "🔬 GW Laboratory" in text
+    assert "waveform-canvas" in text
+    assert "slider-m1" in text
