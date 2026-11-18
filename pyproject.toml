@@ -1,34 +1,34 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "gw-viz"
-version = "0.3.0"
-description = "Scientific tool for gravitational wave analysis: matched filtering, waveform modeling, and data extraction."
+name = "gw-analysis"
+version = "0.1.0"
+description = "Scientific toolkit for gravitational wave data analysis using GWOSC and gwpy."
 readme = "README.md"
 requires-python = ">=3.10"
+license = {text = "AGPL-3.0-or-later"}
 dependencies = [
-  "fastapi>=0.115",
-  "uvicorn[standard]>=0.30",
-  "httpx>=0.27",
+  "gwpy>=3.0",
+  "astropy>=6.0",
   "numpy>=1.26",
   "scipy>=1.11",
   "h5py>=3.10",
+  "matplotlib>=3.8",
+  "requests>=2.31",
 ]
 
 [project.optional-dependencies]
 dev = [
   "pytest>=8",
   "ruff>=0.6",
+  "jupyter>=1.0",
 ]
 
-[build-system]
-requires = ["setuptools>=69"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-packages = ["backend"]
-
-[tool.pytest.ini_options]
-pythonpath = ["."]
-testpaths = ["tests"]
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["gw_analysis*"]
 
 [tool.ruff]
 line-length = 100

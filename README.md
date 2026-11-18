@@ -1,26 +1,51 @@
-# 🌌 GW Viz
+# 🌊 GW Analysis Toolkit
 
-## 🌐 Live Demo
+Herramienta científica para análisis reproducible de datos abiertos de ondas gravitacionales (LIGO/Virgo/KAGRA).
 
-Visita la demo estática en: [https://amurlaniakea.github.io/gw-viz/](https://amurlaniakea.github.io/gw-viz/)
+> *«Tecnósfera al servicio de la Biósfera.» — «La Paz Es El Camino.»*
 
-Esta demo utiliza datos pre-generados en `site/data/`. Para probar la integración completa con GWOSC, ejecuta el backend localmente.
+## Demostración de Capacidad Científica
+
+Esta herramienta descarga datos reales de [GWOSC](https://www.gwosc.org/) y genera informes visuales de alta calidad usando matplotlib y scipy.
 
 
-Visualización educativa de ondas gravitacionales usando datos abiertos de LIGO/Virgo.
+*Figura: Pipeline completo mostrando señal bruta, zoom al merger y espectro de potencia (PSD).*
 
-## MVP actual
-- Visualización interactiva del Strain $h(t)$ del evento GW150914.
-- Estadísticas físicas: Masas de los agujeros negros, energía radiada, distancia.
-- Mapa del cielo (Sky Map) con la elipse de localización de la señal.
-- Generación matemática de la curva *chirp* (aproximación Newtonian).
+## Características Clave
 
-## Requisitos
-- Python 3.10 o superior
-- python3-venv
+- **Datos Reales**: Integración directa con gwpy para acceso transparente a archivos HDF5 de LIGO/Virgo.
+- **DSP Riguroso**: Implementación de Welch's Method para estimación de PSD y cálculo aproximado de SNR.
+- **Visualización Editorial**: Gráficos de 3 paneles listos para publicaciones o docencia universitaria.
+- **Reproducibilidad**: Scripts CLI deterministas y notebooks Jupyter interactivos.
 
-## Ejecutar
-    bash run.sh
+## Instalación Rápida
 
-Luego abrir:
-    http://localhost:8000
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+```
+
+## Uso Inmediato
+
+Analiza el evento emblemático GW150914:
+
+```bash
+./cli_analyze.py GW150914 --detector H1
+```
+
+Resultados esperados:
+1. Caché local en data/raw/GW150914_H1.hdf5.
+2. Métricas impresas: SNR, Amplitud Pico, Duración.
+3. Informe PNG generado en output/GW150914_report.png.
+
+## Estructura del Proyecto
+
+- src/gw_analysis/io: Gestores de I/O y descargas automatizadas vía GWOSC.
+- src/gw_analysis/processing: Algoritmos de procesamiento de señal (SciPy/Numpy).
+- src/gw_analysis/viz: Plantillas de gráficos científicos personalizados.
+- notebooks/: Guías docentes paso a paso.
+
+## Licencia
+
+AGPL-3.0-or-later. Ciencia abierta, verificable y libre.
