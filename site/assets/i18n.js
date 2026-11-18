@@ -5,15 +5,14 @@ const translations = {
     helpM1: "Aumentar m1 reduce duración pero aumenta amplitud final.",
     helpM2: "Relación de masas afecta simetría de señal.",
     helpSnr: "SNR bajo = difícil distinguir señal del ruido.",
-    btnGen: "▶ Generar Señal Teórica",
-    btnReal: "📂 Cargar Datos Reales GW150914",
-    legTheory: "— Teoría (Limpia)",
-    legObserved: "— Observado/Simulado (Ruido)",
+    btnGen: "▶ Generar Señal",
+    legTheory: "— Teoría Pura (Limpia)",
+    legObserved: "— Observado (Con Ruido)",
     lblMc: "𝑀_c (Masa Chirp)",
-    lblDur: "Duración Total",
-    lblFreq: "Frec. Máxima",
+    lblDur: "Duración Inspirals",
+    lblFreq: "Frecuencia Final",
     sumConcept: "¿Qué estás viendo? (Conceptos Físicos)",
-    txtIntro: "Esta herramienta simula la señal de strain (h) producida por la fusión de dos agujeros negros.",
+    txtIntro: "Esta herramienta simula la señal de strain (h) producida por la fusión de dos agujeros negros o estrellas de neutrones.",
     sumFormula: "Física Utilizada (Aproximación PN)",
     txtFormulaIntro: "Usamos la aproximación Leading Order Post-Newtoniana. Fórmulas clave:",
     eqLabel1: "Masa Chirp (Mc): Parámetro fundamental.",
@@ -27,15 +26,14 @@ const translations = {
     helpM1: "Increasing m1 reduces duration but increases final amplitude.",
     helpM2: "Mass ratio affects signal symmetry.",
     helpSnr: "Low SNR = hard to distinguish signal from noise.",
-    btnGen: "▶ Generate Theoretical Signal",
-    btnReal: "📂 Load Real Data GW150914",
-    legTheory: "— Theory (Clean)",
-    legObserved: "— Observed/Simulated (Noise)",
+    btnGen: "▶ Generate Signal",
+    legTheory: "— Pure Theory (Clean)",
+    legObserved: "— Observed (With Noise)",
     lblMc: "ℳ_c (Chirp Mass)",
-    lblDur: "Total Duration",
-    lblFreq: "Max Frequency",
+    lblDur: "Inspiral Duration",
+    lblFreq: "Final Frequency",
     sumConcept: "What are you seeing? (Physical Concepts)",
-    txtIntro: "This tool simulates the strain (h) signal produced by the merger of two black holes.",
+    txtIntro: "This tool simulates the strain (h) signal produced by the merger of two black holes or neutron stars.",
     sumFormula: "Physics Used (PN Approximation)",
     txtFormulaIntro: "We use the Leading Order Post-Newtonian approximation. Key formulas:",
     eqLabel1: "Chirp Mass (Mc): Fundamental parameter.",
@@ -49,15 +47,14 @@ const translations = {
     helpM1: "Augmenter m1 réduit la durée mais augmente l'amplitude finale.",
     helpM2: "Le rapport de masse affecte la symétrie du signal.",
     helpSnr: "Faible SNR = difficile de distinguer le signal du bruit.",
-    btnGen: "▶ Générer Signal Théorique",
-    btnReal: "📂 Charger Données Réelles GW150914",
-    legTheory: "— Théorie (Propre)",
-    legObserved: "— Observé/Simulé (Bruit)",
+    btnGen: "▶ Générer Signal",
+    legTheory: "— Théorie Pure (Propre)",
+    legObserved: "— Observé (Avec Bruit)",
     lblMc: "ℳ_c (Masse Chirp)",
-    lblDur: "Durée Totale",
-    lblFreq: "Fréq. Maximale",
+    lblDur: "Durée Inspiral",
+    lblFreq: "Fréquence Finale",
     sumConcept: "Que voyez-vous ? (Concepts Physiques)",
-    txtIntro: "Cet outil simule le signal de déformation (h) produit par la fusion de deux trous noirs.",
+    txtIntro: "Cet outil simule le signal de déformation (h) produit par la fusion de deux trous noirs ou étoiles à neutrons.",
     sumFormula: "Physique Utilisée (Approximation PN)",
     txtFormulaIntro: "Nous utilisons l'approximation post-newtonienne d'ordre principal. Formules clés :",
     eqLabel1: "Masse Chirp (Mc): Paramètre fondamental.",
@@ -71,25 +68,18 @@ function setLanguage(lang) {
   const t = translations[lang];
   if (!t) return;
 
-  // Header & Controls
   document.getElementById('ui-subtitle').textContent = t.subtitle;
   document.getElementById('ui-controls-title').textContent = t.controlsTitle;
   document.getElementById('ui-help-m1').textContent = t.helpM1;
   document.getElementById('ui-help-m2').textContent = t.helpM2;
   document.getElementById('ui-help-snr').textContent = t.helpSnr;
   document.getElementById('btn-regenerate').textContent = t.btnGen;
-  document.getElementById('btn-load-real').textContent = t.btnReal;
-  
-  // Legend
   document.getElementById('ui-leg-theory').textContent = t.legTheory;
   document.getElementById('ui-leg-observed').textContent = t.legObserved;
-  
-  // Metrics Labels
   document.getElementById('ui-lbl-mc').innerHTML = t.lblMc;
   document.getElementById('ui-lbl-dur').textContent = t.lblDur;
   document.getElementById('ui-lbl-freq').textContent = t.lblFreq;
-
-  // Educational Sections
+  
   document.getElementById('ui-sum-concept').textContent = t.sumConcept;
   document.getElementById('ui-txt-intro').textContent = t.txtIntro;
   
@@ -100,7 +90,6 @@ function setLanguage(lang) {
   document.getElementById('ui-eq-label-3').textContent = t.eqLabel3;
   document.getElementById('ui-txt-note').textContent = t.txtNote;
 
-  // Buttons State
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.lang === lang);
   });

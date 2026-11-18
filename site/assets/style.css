@@ -60,7 +60,6 @@ body {
   margin: 0;
   font-size: 2.5rem;
   font-weight: 800;
-  /* Degradado Arcoíris */
   background: linear-gradient(to right, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -74,7 +73,6 @@ body {
   margin-top: 5px;
 }
 
-/* Language Selector */
 .lang-selector {
   margin-top: 15px;
   display: flex;
@@ -291,7 +289,7 @@ input[type=range] {
   font-weight: bold;
   color: var(--color-theory);
   background: rgba(56, 189, 248, 0.05);
-  list-style: none; /* Remove default arrow */
+  list-style: none;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -338,27 +336,6 @@ input[type=range] {
   margin-top: 10px;
 }
 
-footer {
-  text-align: center;
-  padding: 30px;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  border-top: 1px solid #334155;
-  margin-top: 40px;
-}
-
-.repo-link {
-  color: var(--color-theory);
-  text-decoration: none;
-  font-weight: bold;
-  transition: color 0.2s;
-}
-
-.repo-link:hover {
-  color: var(--color-accent);
-  text-decoration: underline;
-}
-
 /* --- Mathematical Rendering Styles --- */
 .math-display {
   font-family: 'Cambria Math', 'Times New Roman', serif;
@@ -392,7 +369,6 @@ footer {
   padding-left: 15px;
 }
 
-/* Native CSS Fraction Implementation */
 .fraction {
   display: inline-flex;
   flex-direction: column;
@@ -420,45 +396,28 @@ sup, sub {
 sup { top: -0.5em; }
 sub { bottom: -0.5em; }
 
-/* Ensure italics for variables in formulas */
 .math-display em {
   font-style: italic;
   color: #cbd5e1;
 }
 
-.secondary-btn {
-  background: transparent;
-  border: 1px solid var(--color-accent);
-  color: var(--color-accent);
-  margin-top: 10px;
-}
-
-.secondary-btn:hover {
-  background: rgba(167, 139, 250, 0.1);
-  transform: none;
-  box-shadow: none;
-}
-
-/* Mejorar contraste de líneas en canvas */
-.chart-wrapper {
-  box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-}
-
-.small-chart {
-  height: 220px; /* Reducido para caber dos */
-  margin-bottom: 10px;
-}
-
-.chart-label {
-  position: absolute;
-  top: 5px;
-  left: 10px;
-  font-size: 0.8rem;
+footer {
+  text-align: center;
+  padding: 30px;
   color: var(--text-muted);
-  font-weight: bold;
-  z-index: 10;
+  font-size: 0.9rem;
+  border-top: 1px solid #334155;
+  margin-top: 40px;
 }
 
-.status-ok { color: var(--color-success); }
-.status-warn { color: #fbbf24; }
-.status-bad { color: #ef4444; }
+.repo-link {
+  color: var(--color-theory);
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.2s;
+}
+
+.repo-link:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
