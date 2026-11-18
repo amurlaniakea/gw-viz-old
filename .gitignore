@@ -4,3 +4,9 @@ __pycache__/
 .venv/
 .pytest_cache/
 .DS_Store
+
+# Datos científicos y outputs generados
+data/raw/*.hdf5
+output/*.png
+docs/*.png
+*.hdf5
