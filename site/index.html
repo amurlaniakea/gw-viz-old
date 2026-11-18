@@ -23,101 +23,120 @@
         </circle>
       </svg>
       
-      <h1 class="gradient-title">🌊 GW Laboratory</h1>
+      <h1 class="rainbow-title">GW Laboratory</h1>
     </div>
     
-    <p class="subtitle">Simulador Educativo de Formas de Onda Post-Newtonianas</p>
+    <p class="subtitle" id="ui-subtitle">Simulador Educativo de Formas de Onda Post-Newtonianas</p>
+    
+    <!-- Selector de Idioma -->
+    <div class="lang-selector">
+      <button class="lang-btn active" data-lang="es">ES</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+      <button class="lang-btn" data-lang="fr">FR</button>
+    </div>
   </header>
 
   <main class="lab-container">
     
-    <!-- SECCIÓN 1: INTRODUCCIÓN DIDÁCTICA -->
-    <section class="edu-section">
-      <h2>¿Qué estás viendo?</h2>
-      <p>Esta herramienta simula la señal de <strong>strain ($h$)</strong> producida por la fusión de dos agujeros negros o estrellas de neutrones.</p>
-      <ul class="concept-list">
-        <li><strong>Inspiral:</strong> Los cuerpos orbitan acercándose gradualmente. La frecuencia ($f$) aumenta porque pierden energía orbital.</li>
-        <li><strong>Merger (Fusión):</strong> Momento máximo de amplitud y frecuencia antes de formar un único objeto compacto.</li>
-        <li><strong>Ringdown:</strong> El nuevo objeto "vibra" como una campana hasta estabilizarse, emitiendo ondas amortiguadas.</li>
-      </ul>
-    </section>
-
-    <!-- SECCIÓN 2: FÍSICA SUBYACENTE (FORMULAS) -->
-    <section class="formula-section">
-      <h2>Física Utilizada (Aproximación PN)</h2>
-      <p>Para fines educativos, usamos la aproximación <em>Leading Order Post-Newtoniana</em>. Las fórmulas clave son:</p>
-      
-      <div class="math-block">
-        <p><strong>Masa Chirp ($\mathcal{M}_c$):</strong> Parámetro fundamental que determina la evolución temporal.</p>
-        <code>\[ \mathcal{M}_c = \frac{(m_1 m_2)^{3/5}}{(m_1 + m_2)^{1/5}} \]</code>
-        
-        <p><strong>Evolución de Frecuencia ($f(t)$):</strong> La frecuencia sube conforme se acerca la fusión ($\tau$ es tiempo restante).</p>
-        <code>\[ f(\tau) \propto \tau^{-3/8} \]</code>
-        
-        <p><strong>Amplitud ($h(t)$):</strong> Escala inversamente con la distancia y directamente con la masa chirp.</p>
-        <code>\[ h \propto \mathcal{M}_c^{5/3} f^{2/3} D^{-1} \]</code>
-      </div>
-      <p class="note-small">Nota: Esta es una simplificación didáctica. LIGO usa modelos numéricos complejos (Numerical Relativity + EOB/Phenom).</p>
-    </section>
-
-    <!-- SECCIÓN 3: INTERFAZ DE LABORATORIO -->
+    <!-- SECCIÓN PRINCIPAL: LABORATORIO INTERACTIVO -->
     <section class="lab-interface">
       <div class="controls-column">
-        <h2>Parámetros Binarios</h2>
+        <h2 id="ui-controls-title">Parámetros Binarios</h2>
         
         <div class="slider-group">
           <label>Masa 1 ($m_1$): <span id="val-m1" class="highlight-val">36.0</span> M☉</label>
           <input type="range" id="slider-m1" min="10" max="100" step="0.5" value="36">
-          <small>Aumentar $m_1$ reduce la duración total pero aumenta la amplitud final.</small>
+          <small id="ui-help-m1">Aumentar $m_1$ reduce la duración total pero aumenta la amplitud final.</small>
         </div>
         
         <div class="slider-group">
           <label>Masa 2 ($m_2$): <span id="val-m2" class="highlight-val">29.0</span> M☉</label>
           <input type="range" id="slider-m2" min="10" max="100" step="0.5" value="29">
-          <small>Relación de masas afecta la simetría de la señal.</small>
+          <small id="ui-help-m2">Relación de masas afecta la simetría de la señal.</small>
         </div>
         
         <div class="slider-group">
           <label>Ruido Instrumental (SNR): <span id="val-snr" class="highlight-val">25.0</span></label>
           <input type="range" id="slider-snr" min="5" max="50" step="1" value="25">
-          <small>SNR bajo = señal difícil de distinguir del ruido cuántico/termal.</small>
+          <small id="ui-help-snr">SNR bajo = señal difícil de distinguir del ruido cuántico/termal.</small>
         </div>
 
-        <button id="btn-regenerate" class="action-btn pulse-btn">▶ Generar Señal</button>
+        <button id="btn-regenerate" class="action-btn pulse-btn" id="ui-btn-gen">▶ Generar Señal</button>
       </div>
 
       <div class="viz-column">
         <div class="chart-wrapper">
           <canvas id="waveform-canvas" width="800" height="400"></canvas>
           <div class="legend-overlay">
-            <span class="leg-item theory">— Teoría Pura (Limpia)</span>
-            <span class="leg-item observed">— Observado (Con Ruido)</span>
+            <span class="leg-item theory" id="ui-leg-theory">— Teoría Pura (Limpia)</span>
+            <span class="leg-item observed" id="ui-leg-observed">— Observado (Con Ruido)</span>
           </div>
         </div>
         
         <div class="metrics-dashboard">
           <div class="metric-card">
-            <span class="label">$\mathcal{M}_c$ (Chirp Mass)</span>
+            <span class="label" id="ui-lbl-mc">$\mathcal{M}_c$ (Chirp Mass)</span>
             <span class="value" id="out-mc">--</span>
           </div>
           <div class="metric-card">
-            <span class="label">Duración Inspirals</span>
+            <span class="label" id="ui-lbl-dur">Duración Inspirals</span>
             <span class="value" id="out-duration">--</span>
           </div>
           <div class="metric-card">
-            <span class="label">Frecuencia Final</span>
+            <span class="label" id="ui-lbl-freq">Frecuencia Final</span>
             <span class="value" id="out-freq">-- Hz</span>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- SECCIONES DIDÁCTICAS PLEGABLES (ABAJO DE LA GRÁFICA) -->
+    <section class="edu-folders">
+      
+      <details class="edu-block">
+        <summary id="ui-sum-concept">¿Qué estás viendo? (Conceptos Físicos)</summary>
+        <div class="content-inner">
+          <p id="ui-txt-intro">Esta herramienta simula la señal de <strong>strain ($h$)</strong> producida por la fusión de dos agujeros negros o estrellas de neutrones.</p>
+          <ul class="concept-list">
+            <li><strong>Inspiral:</strong> Los cuerpos orbitan acercándose gradualmente. La frecuencia ($f$) aumenta porque pierden energía orbital.</li>
+            <li><strong>Merger (Fusión):</strong> Momento máximo de amplitud y frecuencia antes de formar un único objeto compacto.</li>
+            <li><strong>Ringdown:</strong> El nuevo objeto "vibra" como una campana hasta estabilizarse, emitiendo ondas amortiguadas.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="edu-block formula-block">
+        <summary id="ui-sum-formula">Física Utilizada (Aproximación PN)</summary>
+        <div class="content-inner math-block">
+          <p id="ui-txt-formula-intro">Para fines educativos, usamos la aproximación <em>Leading Order Post-Newtoniana</em>. Las fórmulas clave son:</p>
+          
+          <p><strong>Masa Chirp ($\mathcal{M}_c$):</strong> Parámetro fundamental que determina la evolución temporal.</p>
+          <code>\[ \mathcal{M}_c = \frac{(m_1 m_2)^{3/5}}{(m_1 + m_2)^{1/5}} \]</code>
+          
+          <p><strong>Evolución de Frecuencia ($f(t)$):</strong> La frecuencia sube conforme se acerca la fusión ($\tau$ es tiempo restante).</p>
+          <code>\[ f(\tau) \propto \tau^{-3/8} \]</code>
+          
+          <p><strong>Amplitud ($h(t)$):</strong> Escala inversamente con la distancia y directamente con la masa chirp.</p>
+          <code>\[ h \propto \mathcal{M}_c^{5/3} f^{2/3} D^{-1} \]</code>
+          
+          <p class="note-small" id="ui-txt-note">Nota: Esta es una simplificación didáctica. LIGO usa modelos numéricos complejos (Numerical Relativity + EOB/Phenom).</p>
+        </div>
+      </details>
+
+    </section>
+
   </main>
 
   <footer>
     <p>Proyecto educativo AGPL-3.0 • Basado en principios de Relatividad General</p>
+    <p>
+      <a href="https://github.com/amurlaniakea/gw-viz" target="_blank" class="repo-link">
+        📂 Repositorio: amurlaniakea/gw-viz
+      </a>
+    </p>
   </footer>
 
+  <script src="./assets/i18n.js"></script>
   <script src="./assets/app.js"></script>
 </body>
 </html>
