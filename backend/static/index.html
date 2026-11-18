@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GW Viz - Ondas Gravitacionales</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>🌌 GW Viz</h1>
+    <p>Visualización educativa de ondas gravitacionales (LIGO/Virgo)</p>
+  </header>
+
+  <main>
+    <section class="layout">
+      <div id="chart" class="card"></div>
+      <aside id="detail" class="card">
+        <h2>Cargando evento...</h2>
+      </aside>
+    </section>
+    
+    <section class="skymap-section card">
+      <h2>Mapa del Cielo (Localización)</h2>
+      <div id="skymap"></div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
