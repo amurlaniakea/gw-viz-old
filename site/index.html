@@ -3,116 +3,70 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GW Viz | Explorador de Ondas Gravitacionales</title>
-  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+  <title>GW Lab | Herramienta Científica</title>
   <link rel="stylesheet" href="./assets/style.css" />
 </head>
 <body>
-  <header class="hero-header">
-    <div class="motto-banner">«Tecnósfera al servicio de la Biósfera.» — «La Paz Es El Camino.»</div>
-    <h1>🌌 GW Viz</h1>
-    <p class="subtitle">Explorador educativo de ondas gravitacionales • Datos abiertos LIGO/Virgo/KAGRA</p>
+  <header class="lab-header">
+    <div class="motto">«Tecnósfera al servicio de la Biósfera.» — «La Paz Es El Camino.»</div>
+    <h1>🔬 GW Laboratory</h1>
+    <p>Herramienta de análisis de formas de onda gravitacionales (PN Approximation)</p>
   </header>
 
-  <main class="dashboard">
-    <!-- Selector de Eventos -->
-    <section class="controls-bar">
-      <label for="event-select">Selecciona Evento:</label>
-      <select id="event-select"></select>
-      <span class="badge-static">Demo Estática</span>
+  <main class="lab-container">
+    <!-- Panel de Control (Sliders) -->
+    <section class="control-panel">
+      <h2>Parámetros Binarios</h2>
+      
+      <div class="slider-group">
+        <label>Masa 1 ($m_1$): <span id="val-m1">36.0</span> M☉</label>
+        <input type="range" id="slider-m1" min="10" max="100" step="0.5" value="36">
+      </div>
+      
+      <div class="slider-group">
+        <label>Masa 2 ($m_2$): <span id="val-m2">29.0</span> M☉</label>
+        <input type="range" id="slider-m2" min="10" max="100" step="0.5" value="29">
+      </div>
+      
+      <div class="slider-group">
+        <label>Ruido (SNR objetivo): <span id="val-snr">25.0</span></label>
+        <input type="range" id="slider-snr" min="5" max="50" step="1" value="25">
+      </div>
+
+      <button id="btn-regenerate" class="action-btn">Regenerar Señal</button>
+      
+      <div class="info-box">
+        <p><strong>Física:</strong> Modelo Post-Newtoniano (LO/NL) integrado numéricamente.</p>
+        <p><strong>Educación:</strong> Compara la teoría pura (azul) con la observación ruidosa (gris/blanco).</p>
+      </div>
     </section>
 
-    <!-- Grid Principal -->
-    <div class="viz-grid">
+    <!-- Visualización Principal -->
+    <section class="viz-area">
+      <div class="chart-wrapper">
+        <svg id="waveform-chart" viewBox="0 0 800 400"></svg>
+        <div class="legend">
+          <span class="leg-item theory">— Teoría ($h_{clean}$)</span>
+          <span class="leg-item observed">— Observado ($h_{noisy}$)</span>
+        </div>
+      </div>
       
-      <!-- Columna Izquierda: La Señal (Strain) -->
-      <article class="card signal-card">
-        <h2>Señal de Strain $h(t)$</h2>
-        <div class="chart-container">
-          <svg id="strain-svg" viewBox="0 0 800 300" preserveAspectRatio="none"></svg>
-          <div class="chart-overlay">
-            <span class="phase-label merger">MERGER</span>
-            <span class="phase-label ringdown">RINGDOWN</span>
-          </div>
+      <div class="metrics-dashboard">
+        <div class="metric-card">
+          <span class="label">Chirp Mass ($\mathcal{M}_c$)</span>
+          <span class="value" id="out-mc">--</span>
         </div>
-        <div class="signal-stats">
-          <div class="stat-item">
-            <span class="stat-label">Frecuencia Final</span>
-            <span class="stat-value" id="freq-final">-- Hz</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Amplitud Máx.</span>
-            <span class="stat-value" id="amp-max">-- ×10⁻²¹</span>
-          </div>
+        <div class="metric-card">
+          <span class="label">Duración Inspirals</span>
+          <span class="value" id="out-duration">--</span>
         </div>
-      </article>
-
-      <!-- Columna Derecha: Parámetros Físicos -->
-      <aside class="params-panel">
-        <h2>Parámetros Binarios</h2>
-        
-        <div class="param-group">
-          <div class="param-row">
-            <span class="param-key">Masa 1 ($m_1$)</span>
-            <span class="param-val" id="val-m1">-- M☉</span>
-          </div>
-          <div class="param-row">
-            <span class="param-key">Masa 2 ($m_2$)</span>
-            <span class="param-val" id="val-m2">-- M☉</span>
-          </div>
-          <div class="param-row highlight">
-            <span class="param-key">Masa Chirp ($\mathcal{M}_c$)</span>
-            <span class="param-val" id="val-mc">-- M☉</span>
-          </div>
-          <div class="param-row">
-            <span class="param-key">Distancia</span>
-            <span class="param-val" id="val-dist">-- Mpc</span>
-          </div>
-          <div class="param-row">
-            <span class="param-key">SNR Combinado</span>
-            <span class="param-val" id="val-snr">--</span>
-          </div>
+        <div class="metric-card">
+          <span class="label">SNR Medido (Aprox)</span>
+          <span class="value" id="out-snr">--</span>
         </div>
-
-        <hr class="divider" />
-
-        <h3>Localización en Cielo</h3>
-        <div class="sky-map-placeholder">
-          <svg id="sky-svg" viewBox="0 0 200 200"></svg>
-          <p class="sky-note">Elipse de incertidumbre aproximada</p>
-        </div>
-
-        <div class="detectors-list">
-          <span class="detector-badge active">LIGO-H1</span>
-          <span class="detector-badge active">LIGO-L1</span>
-          <span class="detector-badge inactive">Virgo-V1</span>
-        </div>
-      </aside>
-    </div>
-
-    <!-- Tabla de Catálogo Inferior -->
-    <section class="catalog-section">
-      <h2>Catálogo de Eventos Destacados</h2>
-      <table id="catalog-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Tipo</th>
-            <th>Fecha</th>
-            <th>$\mathcal{M}_c$ (M☉)</th>
-            <th>SNR</th>
-            <th>Detectores</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      </div>
     </section>
   </main>
-
-  <footer>
-    <p>Fuente: <a href="https://www.gwosc.org/" target="_blank">GWOSC</a> • Licencia AGPL-3.0-or-later</p>
-    <p class="philosophy">Ciencia verificable para la paz global.</p>
-  </footer>
 
   <script src="./app.js"></script>
 </body>

@@ -1,13 +1,16 @@
 [project]
 name = "gw-viz"
-version = "0.2.0"
-description = "Educational gravitational wave visualization: strain chirps and event catalogs."
+version = "0.3.0"
+description = "Scientific tool for gravitational wave analysis: matched filtering, waveform modeling, and data extraction."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
   "fastapi>=0.115",
   "uvicorn[standard]>=0.30",
   "httpx>=0.27",
+  "numpy>=1.26",
+  "scipy>=1.11",
+  "h5py>=3.10",
 ]
 
 [project.optional-dependencies]
@@ -23,15 +26,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 packages = ["backend"]
 
-[tool.setuptools.package-data]
-backend = ["data/*.json", "data/*.csv", "static/*"]
-
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
-filterwarnings = [
-  "ignore:Using `httpx` with `starlette.testclient` is deprecated:DeprecationWarning",
-]
 
 [tool.ruff]
 line-length = 100
