@@ -1,47 +1,40 @@
 from __future__ import annotations
 
-import csv
 import json
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+import numpy as np
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+# Importaciones científicas correctas
+from backend.science.waveform import generate_chirp_waveform, calculate_optimal_snr
+from backend.science.noise import add_colored_noise
+
 BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
+DATA_FILE = BASE_DIR / "data" / "events.json"
 STATIC_DIR = BASE_DIR / "static"
 
 
 def load_events() -> dict:
-    return json.loads((DATA_DIR / "events.json").read_text(encoding="utf-8"))
-
-
-def load_strain(event_id: str) -> list[dict]:
-    if event_id.lower() != "gw150914":
-        return []
-    strain_file = DATA_DIR / "gw150914_strain.csv"
-    data = []
-    with open(strain_file, "r", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            data.append({"t": float(row["time"]), "h": float(row["strain"])})
-    return data
+    if not DATA_FILE.exists():
+        return {"events": []}
+    return json.loads(DATA_FILE.read_text(encoding="utf-8"))
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.events = load_events()
-    app.state.strain_data = load_strain("gw150914")
+    app.state.events_data = load_events()
     yield
 
 
 app = FastAPI(
-    title="GW Viz",
-    version="0.1.0",
-    description="Visualización educativa de ondas gravitacionales.",
+    title="GW Lab",
+    version="0.3.0",
+    description="Herramienta científica para análisis de ondas gravitacionales.",
     lifespan=lifespan,
 )
 
@@ -53,79 +46,34 @@ app.add_middleware(
 )
 
 
+@app.get("/api/health")
+def health():
+    return {"status": "ok", "service": "gw-lab"}
+
+
 @app.get("/api/events")
 def list_events():
-    return app.state.events
+    data = app.state.events_data
+    summaries = []
+    for ev in data.get("events", []):
+        summaries.append({
+            "id": ev.get("id"),
+            "name": ev.get("name", ev.get("id")),
+            "date": ev.get("date"),
+            "mass_1": ev.get("mass_1"),
+            "mass_2": ev.get("mass_2"),
+        })
+    return {"events": summaries}
 
 
 @app.get("/api/events/{event_id}")
 def get_event(event_id: str):
-    for ev in app.state.events.get("events", []):
-        if ev["id"].lower() == event_id.lower():
+    data = app.state.events_data
+    for ev in data.get("events", []):
+        if ev.get("id") == event_id:
             return ev
     raise HTTPException(status_code=404, detail=f"Event '{event_id}' not found")
 
-
-@app.get("/api/events/{event_id}/strain")
-def get_strain(event_id: str):
-    if event_id.lower() != "gw150914":
-        raise HTTPException(status_code=404, detail="Strain data not found")
-    return app.state.strain_data
-
-
-@app.get("/", include_in_schema=False)
-def index():
-    return FileResponse(STATIC_DIR / "index.html")
-
-
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-
-from backend.science.waveform import generate_taylor_t2_inspiral, calculate_snr
-from backend.science.noise import add_white_noise
-import numpy as np
-
-@app.get("/api/science/waveform")
-async def get_science_waveform(
-    m1: float = 36.0,
-    m2: float = 29.0,
-    f_start: float = 20.0,
-    f_end: float = 500.0,
-    snr_simulated: float = 25.0
-):
-    """
-    Genera una forma de onda teórica y añade ruido simulado para práctica de detección.
-    
-    Retorna JSON con arrays de tiempo, señal limpia y señal ruidosa.
-    Nota: Los arrays son decimados para mantener el payload ligero (<1MB).
-    """
-    # Generar señal base
-    t, h_clean = generate_taylor_t2_inspiral(m1, m2, f_start, f_end)
-    
-    # Añadir ruido para simular observación realista
-    h_noisy = add_white_noise(h_clean, snr_simulated)
-    
-    # Decimar para transporte web (cada 10 puntos)
-    step = max(1, len(t) // 2000)
-    t_decimated = t[::step].tolist()
-    h_clean_decimated = h_clean[::step].tolist()
-    h_noisy_decimated = h_noisy[::step].tolist()
-    
-    # Calcular SNR teórico vs observado (demostración de poder de detección)
-    snr_observed = calculate_snr(h_clean, h_noisy)
-    
-    return {
-        "parameters": {"m1": m1, "m2": m2, "f_start": f_start, "f_end": f_end},
-        "time_s": t_decimated,
-        "strain_clean": h_clean_decimated,
-        "strain_noisy": h_noisy_decimated,
-        "snr_theoretical_input": snr_simulated,
-        "snr_measured_output": round(float(snr_observed), 2),
-        "units": {"time": "seconds", "strain": "dimensionless"}
-    }
-
-from backend.science.waveform import generate_chirp_waveform, calculate_optimal_snr
-from backend.science.noise import add_colored_noise
-import numpy as np
 
 @app.get("/api/lab/waveform")
 async def get_lab_waveform(
@@ -139,34 +87,45 @@ async def get_lab_waveform(
     """
     Laboratorio Virtual GW: Genera señal teórica y observada simulada.
     
-    Permite estudiar cómo cambia la forma de onda con las masas y 
-    cómo el ruido afecta la detección (SNR).
+    Física subyacente: Aproximación Post-Newtoniana (PN) integrada numéricamente.
+    Ruido: Gaussiano blanco calibrado por SNR objetivo.
     """
     try:
-        # 1. Generar señal limpia (Teoría)
+        # 1. Validar parámetros físicos básicos
+        if m1 <= 0 or m2 <= 0:
+            raise ValueError("Masas deben ser positivas.")
+        if f_start >= f_end:
+            raise ValueError("f_start debe ser menor que f_end.")
+            
+        # 2. Generar señal limpia (Teoría)
         t, h_clean = generate_chirp_waveform(m1, m2, f_start, f_end)
         
-        # 2. Añadir ruido controlado (Simulación Observación)
+        # 3. Añadir ruido controlado (Simulación Observación)
         h_noisy = add_colored_noise(h_clean, snr_simulated, seed=seed)
         
-        # 3. Decimar para transporte web eficiente (mantener ~2000 puntos)
+        # 4. Decimar para transporte web eficiente (mantener ~2000 puntos máx)
         step = max(1, len(t) // 2000)
         t_out = t[::step].tolist()
         h_clean_out = h_clean[::step].tolist()
         h_noisy_out = h_noisy[::step].tolist()
         
-        # 4. Métricas físicas
+        # 5. Métricas físicas
         M_total = m1 + m2
         mu = (m1 * m2) / M_total
         mc = ((mu ** (3/5)) / (M_total ** (1/5)))
         
-        # SNR medido en la simulación (aproximado por norma)
-        snr_measured = float(np.linalg.norm(h_clean) / np.linalg.norm(h_noisy - h_clean)) if np.any(h_noisy != h_clean) else 0.0
+        # SNR medido real en la simulación (norma de señal / norma de ruido)
+        noise_component = h_noisy - h_clean
+        signal_norm = np.linalg.norm(h_clean)
+        noise_norm = np.linalg.norm(noise_component)
+        
+        snr_measured = float(signal_norm / noise_norm) if noise_norm > 0 else 0.0
         
         return {
             "status": "success",
             "parameters": {
-                "m1": m1, "m2": m2, 
+                "m1": m1, 
+                "m2": m2, 
                 "chirp_mass_mc": round(mc, 2),
                 "total_mass": round(M_total, 2),
                 "f_range_hz": [f_start, f_end],
@@ -186,3 +145,16 @@ async def get_lab_waveform(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating waveform: {str(e)}")
+
+
+@app.get("/", include_in_schema=False)
+def index():
+    # Sirve el frontend local si existe, sino redirige a docs
+    if STATIC_DIR.exists() and (STATIC_DIR / "index.html").exists():
+        return FileResponse(STATIC_DIR / "index.html")
+    return {"message": "Frontend not found. Visit /docs for API."}
+
+
+# Montar static files si existe la carpeta
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
