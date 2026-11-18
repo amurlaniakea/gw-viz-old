@@ -3,12 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GW Lab | Laboratorio Virtual de Ondas Gravitacionales</title>
+  <title>GW Lab | Simulación de Detección LIGO</title>
   <link rel="stylesheet" href="./assets/style.css" />
 </head>
 <body>
   
-  <!-- HEADER -->
   <header class="lab-header">
     <div class="motto-banner">«Tecnósfera al servicio de la Biósfera.» — «La Paz Es El Camino.»</div>
     
@@ -22,10 +21,10 @@
         </circle>
       </svg>
       
-      <h1 class="rainbow-title">GW Laboratory</h1>
+      <h1 class="rainbow-title">GW Detection Lab</h1>
     </div>
     
-    <p class="subtitle" id="ui-subtitle">Simulador Educativo de Formas de Onda Post-Newtonianas</p>
+    <p class="subtitle" id="ui-subtitle">Simulación de Extracción de Señal en Ruido Instrumental</p>
     
     <div class="lang-selector">
       <button class="lang-btn active" data-lang="es">ES</button>
@@ -39,102 +38,92 @@
     <!-- CONTROL PANEL -->
     <section class="lab-interface">
       <div class="controls-column">
-        <h2 id="ui-controls-title">Parámetros Binarios</h2>
+        <h2 id="ui-controls-title">Parámetros de Fusión Binaria</h2>
         
         <div class="slider-group">
           <label>Masa 1 (<em>m</em><sub>1</sub>): <span id="val-m1" class="highlight-val">36.0</span> M☉</label>
           <input type="range" id="slider-m1" min="10" max="100" step="0.5" value="36">
-          <small id="ui-help-m1">Aumentar m1 reduce duración pero aumenta amplitud final.</small>
         </div>
         
         <div class="slider-group">
           <label>Masa 2 (<em>m</em><sub>2</sub>): <span id="val-m2" class="highlight-val">29.0</span> M☉</label>
           <input type="range" id="slider-m2" min="10" max="100" step="0.5" value="29">
-          <small id="ui-help-m2">Relación de masas afecta simetría de señal.</small>
         </div>
         
         <div class="slider-group">
-          <label>Ruido Instrumental (SNR): <span id="val-snr" class="highlight-val">25.0</span></label>
-          <input type="range" id="slider-snr" min="5" max="50" step="1" value="25">
-          <small id="ui-help-snr">SNR bajo = difícil distinguir señal del ruido.</small>
+          <label>SNR Objetivo: <span id="val-snr" class="highlight-val">12.0</span></label>
+          <input type="range" id="slider-snr" min="5" max="30" step="1" value="12">
+          <small id="ui-help-snr">SNR < 8 es indetectable manualmente. SNR > 15 es claro.</small>
         </div>
 
-        <button id="btn-regenerate" class="action-btn pulse-btn">▶ Generar Señal Teórica</button>
-        <button id="btn-load-real" class="action-btn secondary-btn">📂 Cargar Datos Reales GW150914</button>
+        <button id="btn-regenerate" class="action-btn pulse-btn">▶ Simular Detección</button>
       </div>
 
       <div class="viz-column">
-        <div class="chart-wrapper">
-          <canvas id="waveform-canvas" width="800" height="400"></canvas>
-          <div class="legend-overlay">
-            <span class="leg-item theory" id="ui-leg-theory">— Teoría (Limpia)</span>
-            <span class="leg-item observed" id="ui-leg-observed">— Observado/Simulado (Ruido)</span>
-          </div>
+        <!-- GRÁFICA SUPERIOR: Detector H1 -->
+        <div class="chart-wrapper small-chart">
+          <div class="chart-label">LIGO-Hanford (H1)</div>
+          <canvas id="canvas-h1" width="800" height="200"></canvas>
+        </div>
+
+        <!-- GRÁFICA INFERIOR: Detector L1 -->
+        <div class="chart-wrapper small-chart">
+          <div class="chart-label">LIGO-Livingston (L1)</div>
+          <canvas id="canvas-l1" width="800" height="200"></canvas>
         </div>
         
         <div class="metrics-dashboard">
           <div class="metric-card">
-            <span class="label" id="ui-lbl-mc">𝑀_c (Masa Chirp)</span>
+            <span class="label" id="ui-lbl-mc">𝑀_c (Chirp Mass)</span>
             <span class="value" id="out-mc">--</span>
           </div>
           <div class="metric-card">
-            <span class="label" id="ui-lbl-dur">Duración Total</span>
+            <span class="label" id="ui-lbl-dur">Duración Visible</span>
             <span class="value" id="out-duration">-- s</span>
           </div>
           <div class="metric-card">
-            <span class="label" id="ui-lbl-freq">Frec. Máxima</span>
-            <span class="value" id="out-freq">-- Hz</span>
+            <span class="label" id="ui-lbl-status">Estado</span>
+            <span class="value status-ok" id="out-status">Esperando...</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- EDUCATIONAL SECTIONS (Foldable) -->
+    <!-- EDUCATIONAL SECTIONS -->
     <section class="edu-folders">
       
       <details class="edu-block">
-        <summary id="ui-sum-concept">¿Qué estás viendo? (Conceptos Físicos)</summary>
+        <summary id="ui-sum-concept">¿Por qué vemos esto?</summary>
         <div class="content-inner">
-          <p id="ui-txt-intro">Esta herramienta simula la señal de strain (h) producida por la fusión de dos agujeros negros.</p>
+          <p id="ui-txt-intro">Las ondas gravitacionales deforman el espacio-tiempo diminutamente ($h \sim 10^{-21}$). Los interferómetros láser miden este cambio comparando dos brazos perpendiculares.</p>
           <ul class="concept-list">
-            <li><strong>Inspiral:</strong> Los cuerpos orbitan acercándose. La frecuencia (f) aumenta porque pierden energía orbital.</li>
-            <li><strong>Merger (Fusión):</strong> Momento máximo de amplitud y frecuencia antes de formar un único objeto.</li>
-            <li><strong>Ringdown:</strong> El nuevo objeto vibra como una campana hasta estabilizarse.</li>
+            <li><strong>Inspiral:</strong> La frecuencia sube rápidamente (chirp) mientras los agujeros negros pierden energía.</li>
+            <li><strong>Ruido:</strong> Vibraciones sísmicas, térmicas y cuánticas oscurecen la señal.</li>
+            <li><strong>Coincidencia:</strong> Solo si H1 y L1 ven la misma forma de onda desplazada por ~7ms, es real.</li>
           </ul>
         </div>
       </details>
 
       <details class="edu-block formula-block">
-        <summary id="ui-sum-formula">Física Utilizada (Aproximación PN)</summary>
+        <summary id="ui-sum-formula">Limitaciones del Modelo</summary>
         <div class="content-inner math-block">
-          <p id="ui-txt-formula-intro">Usamos la aproximación Leading Order Post-Newtoniana. Fórmulas clave:</p>
+          <p id="ui-txt-formula-intro">Este laboratorio usa la aproximación <strong>Post-Newtoniana (PN)</strong>, válida para la fase de inspiral temprana/media.</p>
           
           <div class="equation-group">
-            <p class="eq-label" id="ui-eq-label-1">Masa Chirp (Mc): Parámetro fundamental.</p>
+            <p class="eq-label" id="ui-eq-label-1">Validez:</p>
             <div class="math-display">
-              <span class="var-script">M</span><sub>c</sub> = 
-              <div class="fraction">
-                <span class="numerator">(m<sub>1</sub> m<sub>2</sub>)<sup>3/5</sup></span>
-                <span class="denominator">(m<sub>1</sub> + m<sub>2</sub>)<sup>1/5</sup></span>
-              </div>
+              v/c &lt;&lt; 1 (Velocidades orbitales bajas)
             </div>
           </div>
 
           <div class="equation-group">
-            <p class="eq-label" id="ui-eq-label-2">Evolución de Frecuencia f(τ): Sube conforme se acerca τ→0.</p>
+            <p class="eq-label" id="ui-eq-label-2">Fallo en Merger/Ringdown:</p>
             <div class="math-display">
-              f(τ) ∝ τ<sup>-3/8</sup>
-            </div>
-          </div>
-
-          <div class="equation-group">
-            <p class="eq-label" id="ui-eq-label-3">Amplitud h(t): Escala con Mc y distancia D.</p>
-            <div class="math-display">
-              h ∝ M<sub>c</sub><sup>5/3</sup> f<sup>2/3</sup> D<sup>-1</sup>
+              Requiere Relatividad Numérica (NR) o EOB
             </div>
           </div>
           
-          <p class="note-small" id="ui-txt-note">Nota: Simplificación didáctica. LIGO usa modelos numéricos complejos (EOB/Phenom).</p>
+          <p class="note-small" id="ui-txt-note">Nota: Para eventos reales como GW150914, LIGO combina PN + NR mediante modelos PhenomD. Aquí simplificamos para visualizar el concepto de extracción de señal.</p>
         </div>
       </details>
 
@@ -143,7 +132,7 @@
   </main>
 
   <footer>
-    <p>Proyecto educativo MagoPredator SPAIN • Basado en principios de Relatividad General</p>
+    <p>Proyecto educativo MagoPredator SPAIN • Modelo Aproximado Post-Newtoniano</p>
     <p>
       <a href="https://github.com/amurlaniakea/gw-viz" target="_blank" class="repo-link">
         📂 Repositorio: amurlaniakea/gw-viz

@@ -443,3 +443,22 @@ sub { bottom: -0.5em; }
 .chart-wrapper {
   box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
 }
+
+.small-chart {
+  height: 220px; /* Reducido para caber dos */
+  margin-bottom: 10px;
+}
+
+.chart-label {
+  position: absolute;
+  top: 5px;
+  left: 10px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: bold;
+  z-index: 10;
+}
+
+.status-ok { color: var(--color-success); }
+.status-warn { color: #fbbf24; }
+.status-bad { color: #ef4444; }
