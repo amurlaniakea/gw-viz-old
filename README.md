@@ -1,5 +1,12 @@
 # 🌌 GW Viz
 
+## 🌐 Live Demo
+
+Visita la demo estática en: [https://amurlaniakea.github.io/gw-viz/](https://amurlaniakea.github.io/gw-viz/)
+
+Esta demo utiliza datos pre-generados en `site/data/`. Para probar la integración completa con GWOSC, ejecuta el backend localmente.
+
+
 Visualización educativa de ondas gravitacionales usando datos abiertos de LIGO/Virgo.
 
 ## MVP actual

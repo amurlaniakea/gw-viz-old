@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GW Viz | Live Demo</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+  <link rel="stylesheet" href="./assets/style.css" />
+</head>
+<body>
+  <header>
+    <div class="motto">«Tecnósfera al servicio de la Biósfera.» — «La Paz Es El Camino.»</div>
+    <h1>🌌 GW Viz</h1>
+    <p>Explorador educativo de ondas gravitacionales (LIGO/Virgo)</p>
+    <p style="font-size:0.8em; color:#64748b;">Demo estática • Datos de GWOSC simplificados</p>
+  </header>
+
+  <main>
+    <section class="controls">
+      <label for="event-select">Evento:</label>
+      <select id="event-select"></select>
+    </section>
+
+    <section class="layout">
+      <div id="chart-container">
+        <canvas id="strain-canvas" width="800" height="400"></canvas>
+        <p id="chart-caption">Cargando señal...</p>
+      </div>
+      <aside id="detail-panel">Selecciona un evento.</aside>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
