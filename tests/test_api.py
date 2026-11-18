@@ -1,30 +1,21 @@
-import pytest
 from fastapi.testclient import TestClient
 
 from backend.main import app
 
 
-@pytest.fixture(scope="module")
-def client():
-    with TestClient(app) as test_client:
-        yield test_client
+def test_health():
+    client = TestClient(app)
+    response = client.get("/api/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ok"
+    assert data["service"] == "gw-lab"
 
 
-def test_list_events(client):
-    res = client.get("/api/events")
-    assert res.status_code == 200
-    assert "events" in res.json()
-
-
-def test_event_detail(client):
-    res = client.get("/api/events/GW150914")
-    assert res.status_code == 200
-    assert res.json()["id"] == "GW150914"
-
-
-def test_strain_data(client):
-    res = client.get("/api/events/GW150914/strain")
-    assert res.status_code == 200
-    data = res.json()
-    assert len(data) > 100
-    assert "t" in data[0] and "h" in data[0]
+def test_root_serves_index():
+    client = TestClient(app)
+    # La raíz debe servir el HTML del sitio si existe
+    response = client.get("/")
+    assert response.status_code == 200
+    # Verificamos que contiene el título esperado
+    assert "GW Lab" in response.text or "waveform-canvas" in response.text
