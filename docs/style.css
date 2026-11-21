@@ -23,3 +23,7 @@ dt{color:var(--mute)}dd{margin:0;text-align:right;font-variant-numeric:tabular-n
 .learn ul{margin:.2rem 0;padding-left:1.1rem}.learn li{margin:.4rem 0}
 code{background:#0a1230;padding:.05rem .3rem;border-radius:4px}
 footer{color:var(--mute);font-size:.85rem}footer a{color:var(--acc)}
+.orbit{display:grid;grid-template-columns:minmax(260px,430px) 1fr;gap:1rem;align-items:start}
+#c-orbit{aspect-ratio:1;height:auto}
+.cv{position:relative}.cur{position:absolute;top:0;bottom:0;width:2px;background:#ffffffb0;pointer-events:none;left:-10px}
+@media(max-width:700px){.orbit{grid-template-columns:1fr}}

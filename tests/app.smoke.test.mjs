@@ -20,7 +20,7 @@ const synthetic = { event: 'GW150914', fs: 4096, band_hz: [35, 350], window_s: [
 test('app.js carga, analiza y dibuja sin excepciones', async () => {
   const els = {}, noop = new Proxy(function () {}, {
     get: (t, k) => (k === 'createImageData' ? (a, b) => ({ data: new Uint8ClampedArray(a * b * 4) }) : noop), apply: () => noop, set: () => true });
-  const mk = (id) => ({ id, value: { m1: '36', m2: '29', det: 'H1', speed: '1' }[id] ?? '', textContent: '', innerHTML: '', clientWidth: 700, clientHeight: 300,
+  const mk = (id) => ({ id, value: { m1: '36', m2: '29', det: 'H1', speed: '1' }[id] ?? '', textContent: '', innerHTML: '', clientWidth: 700, clientHeight: 300, style: {}, 
     addEventListener() {}, getContext: () => noop });
   Object.assign(globalThis, { document: { getElementById: (id) => (els[id] ||= mk(id)), createElement: () => mk('off') },
     devicePixelRatio: 2, addEventListener() {}, requestAnimationFrame: () => 0, cancelAnimationFrame() {},
@@ -31,5 +31,6 @@ test('app.js carga, analiza y dibuja sin excepciones', async () => {
   assert.match(els.status.textContent, /cargados/);
   assert.match(els.out.innerHTML, /Retardo L1−H1<\/dt><dd>6\.\d ms/);
   assert.match(els.out.innerHTML, /\+ \/ −/);
-  els['b-pub'].onclick();
+  assert.match(els['o-out'].innerHTML, /Separación<\/dt><dd>\d+\.\d M = \d+ km/);
+  els['b-play'].onclick(); els['b-play'].onclick(); els['b-pub'].onclick();
 });

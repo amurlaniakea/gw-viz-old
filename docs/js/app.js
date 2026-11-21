@@ -1,10 +1,11 @@
 // GW Lab — interfaz (Canvas 2D + Web Audio). Copyright (C) Pedro Sordo Martínez — AGPL-3.0-or-later
 import { analyze, optimize } from './lab.js';
 import { spectrogram, inferno } from './dsp.js';
+import { orbitAt, bhPositions, fieldImage } from './orbit.js';
 
 const $ = (id) => document.getElementById(id);
 const PUB = { m1: 36, m2: 29 };
-let data, table, res, spec = {}, raf = 0, actx = null;
+let data, table, res, spec = {}, raf = 0, actx = null, T = 0, playing = false, lastTs = 0, ofc = null;
 
 function fit(c) {
   const r = window.devicePixelRatio || 1, w = c.clientWidth || 600, h = c.clientHeight || 300;
@@ -29,7 +30,9 @@ async function init() {
   $('b-opt').onclick = () => { $('status').textContent = 'Optimizando…'; setTimeout(() => { const o = optimize(data, table); setMasses(o.m1, o.m2); $('status').textContent = 'Optimizado sobre el SNR de red (ver la degeneración m₁–m₂).'; }, 20); };
   $('b-snd-data').onclick = () => play(res.det.H1.x);
   $('b-snd-tpl').onclick = () => play(res.det.H1.fit);
-  $('det').onchange = draw; addEventListener('resize', draw);
+  $('det').onchange = () => { draw(); }; addEventListener('resize', draw);
+  $('b-play').onclick = () => { playing = !playing; $('b-play').textContent = playing ? '⏸ Pausa' : '▶ Reproducir'; if (playing) { lastTs = 0; requestAnimationFrame(tick); } };
+  $('t-slider').addEventListener('input', () => { T = res.wf.t[0] + (+$('t-slider').value / 1000) * (res.wf.t.at(-1) - res.wf.t[0]); frame(); });
   update();
 }
 function setMasses(a, b) { $('m1').value = a; $('m2').value = b; update(); }
@@ -39,6 +42,7 @@ function update() {
   const m1 = +$('m1').value, m2 = +$('m2').value;
   $('v-m1').textContent = fmt(m1); $('v-m2').textContent = fmt(m2);
   res = analyze(data, table, m1, m2);
+  if (!(T >= res.wf.t[0] && T <= res.wf.t.at(-1))) T = res.wf.t[0];
   const H = res.det.H1, L = res.det.L1, rows = [
     ['Masa de chirp 𝓜', fmt(res.Mc, 2) + ' M☉'], ['Razón simétrica η', fmt(res.eta, 3)],
     ['Masa final', fmt(res.mf, 1) + ' M☉'], ['Espín final', fmt(res.af, 2)], ['f ringdown', fmt(res.fRing, 0) + ' Hz'],
@@ -48,7 +52,34 @@ function update() {
   draw();
 }
 
-function draw() { if (res) { drawStrain(); drawSpec(); drawASD(); } }
+function draw() { if (res) { drawStrain(); drawSpec(); drawASD(); frame(); } }
+function frame() { drawOrbit(); moveCursors(); }
+function tick(ts) {
+  if (!playing) return;
+  const dt = lastTs ? (ts - lastTs) / 1000 : 0; lastTs = ts;
+  const t0 = res.wf.t[0], t1 = res.wf.t.at(-1); T += dt * +$('o-speed').value; if (T > t1) T = t0;
+  $('t-slider').value = Math.round(((T - t0) / (t1 - t0)) * 1000); frame(); requestAnimationFrame(tick);
+}
+function moveCursors() {
+  const [ta, tb] = data.window_s;
+  for (const [id, cv, det] of [['cur-strain', 'c-strain', 'H1'], ['cur-spec', 'c-spec', $('det').value]]) {
+    const w = $(cv).clientWidth || 600, td = T + res.det[det].shift, x = 46 + ((td - ta) / (tb - ta)) * (w - 56);
+    $(id).style.left = (td < ta || td > tb ? -10 : x) + 'px';
+  }
+}
+function drawOrbit() {
+  const { g, w, h } = fit($('c-orbit')), wf = res.wf, m1 = res.m1, m2 = res.m2, M = m1 + m2, FOV = 36, SZ = 150, S = w / (2 * FOV);
+  ofc = ofc || document.createElement('canvas'); ofc.width = ofc.height = SZ;
+  const og = ofc.getContext('2d'), img = og.createImageData(SZ, SZ); fieldImage(wf, m1, m2, T, SZ, FOV, img.data); og.putImageData(img, 0, 0);
+  g.imageSmoothingEnabled = true; g.drawImage(ofc, 0, 0, w, h);
+  const st = orbitAt(wf, m1, m2, T), disc = (x, y, r) => { g.shadowColor = '#000'; g.shadowBlur = 8; g.fillStyle = '#000'; g.beginPath(); g.arc(x, y, Math.max(r, 1.5), 0, 7); g.fill(); g.shadowBlur = 0; g.strokeStyle = '#fff'; g.lineWidth = 1.2; g.stroke(); };
+  if (st.inspiral) bhPositions(st, m1, m2).forEach((p, i) => disc(w / 2 + p.x * S, h / 2 - p.y * S, 2 * ((i ? m2 : m1) / M) * S));
+  else disc(w / 2, h / 2, 2 * (res.mf / M) * S * (1 + 0.12 * Math.cos(wf.p[st.j]) * (wf.a[st.j] / (wf.a[wf.nInsp - 1] || 1))));
+  const phase = st.inspiral ? 'inspiral' : T < wf.t[wf.nInsp] + 0.02 ? 'fusión' : 'ringdown';
+  $('o-out').innerHTML = [['t − t_fusión', fmt(T * 1000, 0) + ' ms'], ['Fase', phase], ['f onda gravitacional', fmt(st.fgw, 0) + ' Hz'],
+    ['Separación', st.inspiral ? fmt(st.r, 1) + ' M = ' + fmt(st.r * M * 1.476625, 0) + ' km' : '—'], ['Velocidad orbital', st.inspiral ? fmt(st.v, 2) + ' c' : '—']]
+    .map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+}
 
 function drawStrain() {
   const { g, w, h } = fit($('c-strain')), [ta, tb] = data.window_s, pad = { l: 46, r: 10, t: 8, b: 24 };

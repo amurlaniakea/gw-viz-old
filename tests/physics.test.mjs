@@ -2,23 +2,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { fGW, qnm220, massParams, finalState, waveform, TSUN } from '../docs/js/physics.js';
+import { inspiral, qnm220, massParams, finalState, waveform, TSUN } from '../docs/js/physics.js';
 const ref = JSON.parse(readFileSync(new URL('./fixtures/lal_reference.json', import.meta.url)));
 
 test('chirp mass de (35.6+30.6) Msun ≈ 28.7 Msun', () => {
   assert.ok(Math.abs(massParams(35.6, 30.6).Mc - 28.7) < 0.1);
 });
 
-test('f(t) coincide con TaylorT3 2.5PN de LAL (t_c libre) < 1%', () => {
-  for (const c of ref.t3) {
+test('inspiral T4 2.5PN: f(t) coincide con TaylorT4 de LAL en todo su rango (t_c libre) < 0.7%', () => {
+  for (const c of ref.t4) {
+    const ins = inspiral({ m1: c.m1, m2: c.m2, fLow: 20, xEnd: 0.4 }), n = ins.t.length;
+    const fAt = (t) => { const k = (t - ins.t[0]) * 4096, j = Math.floor(k); if (j < 0 || j >= n - 1) return NaN; const u = k - j; return ins.f[j] * (1 - u) + ins.f[j + 1] * u; };
     let best = Infinity;
-    const t0 = c.t.at(-1);
-    for (let tc = t0 + 0.0005; tc < t0 + 3; tc += 0.0005) {   // tc posterior al último punto
-      let e = 0; c.t.forEach((t, i) => { e = Math.max(e, Math.abs(fGW(tc - t, c.m1, c.m2) / c.f[i] - 1)); });
-      best = Math.min(best, e);
+    for (let s = -0.5; s < 6; s += 0.0002) {             // t_ours = t_lal + s
+      let e = 0; for (let i = 0; i < c.t.length; i++) { const v = fAt(c.t[i] + s); e = Math.max(e, Math.abs(v / c.f[i] - 1)); if (!(e < best)) break; }
+      if (e < best) best = e;
     }
-    assert.ok(best < 0.01, `(${c.m1},${c.m2}) error máx ${(best * 100).toFixed(3)}%`);
+    assert.ok(best < 0.007, `(${c.m1},${c.m2}) error máx ${(best * 100).toFixed(3)}%`);
   }
+});
+
+test('el chirp llega al rango de GW150914: la inspiral alcanza >100 Hz y es monótona', () => {
+  const w = waveform({ m1: 35.6, m2: 30.6, finalTable: ref.final });
+  assert.ok(w.fEnd > 100 && w.fEnd < 140, `fEnd ${w.fEnd}`);
+  for (let i = 1; i < w.nInsp; i++) assert.ok(w.f[i] > w.f[i - 1]);
 });
 
 test('QNM 220: ajuste BCW06 vs Leaver exacto < 3% (f) y < 6% (decaimiento)', () => {

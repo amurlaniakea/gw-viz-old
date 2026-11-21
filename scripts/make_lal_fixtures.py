@@ -7,21 +7,21 @@ import json, numpy as np
 import lal, lalsimulation as ls
 
 MSUN = lal.MSUN_SI; MPC = lal.PC_SI * 1e6
-out = {"lalsuite": lal.__version__, "t3": [], "final": [], "qnm": [], "qnm_source": "qnm (Stein 2019, JOSS 4(42), 1683)"}
+out = {"lalsuite": lal.__version__, "t4": [], "final": [], "qnm": [], "qnm_source": "qnm (Stein 2019, JOSS 4(42), 1683)"}
 
-# 1) TaylorT3 a 2.5PN: frecuencia GW vs tiempo (t_c libre)
-for m1, m2 in [(35.6, 30.6), (10.0, 10.0), (30.0, 10.0), (1.4, 1.4)]:
+# 1) TaylorT4 a 2.5PN: frecuencia GW vs tiempo (t_c libre). T3 se descartó: su serie 2.5PN deja de
+#    ser monótona a ~31 Hz para M≈65 Msun (rotura conocida de T3), así que no cubre el chirp real.
+for m1, m2 in [(35.6, 30.6), (10.0, 10.0), (30.0, 10.0), (50.0, 50.0)]:
     p = lal.CreateDict(); ls.SimInspiralWaveformParamsInsertPNPhaseOrder(p, 5)
     dt = 1 / 16384.
     hp, hc = ls.SimInspiralChooseTDWaveform(m1*MSUN, m2*MSUN, 0,0,0, 0,0,0,
-        400*MPC, 0., 0., 0., 0., 0., dt, 20., 20., p, ls.TaylorT3)
+        400*MPC, 0., 0., 0., 0., 0., dt, 20., 20., p, ls.TaylorT4)
     n = hp.data.length; t = np.arange(n) * dt + float(hp.epoch)
     ph = np.unwrap(np.arctan2(hc.data.data, hp.data.data))
     f = np.gradient(ph, dt) / (2*np.pi)
-    # El t=0 de LAL NO es la coalescencia (T3 se trunca antes): el test ajusta t_c.
     sel = np.where((t > t[0] + 0.02) & (t < t[-1] - 0.02))[0]
-    idx = np.linspace(sel[0], sel[-1], 14).astype(int)
-    out["t3"].append({"m1": m1, "m2": m2,
+    idx = np.linspace(sel[0], sel[-1], 16).astype(int)
+    out["t4"].append({"m1": m1, "m2": m2,
         "t": [float(t[i]) for i in idx], "f": [float(f[i]) for i in idx]})
 
 # 2) Masa y espín finales (ajustes NR de PhenomX, Jiménez-Forteza+ 2017), chi=0

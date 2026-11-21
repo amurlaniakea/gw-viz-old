@@ -2,11 +2,14 @@
 // Copyright (C) Pedro Sordo Martínez — AGPL-3.0-or-later
 //
 // Referencias:
-//  [B14] Blanchet, Living Rev. Relativ. 17, 2 (2014) — evolución PN (TaylorT3 a 2.5PN)
+//  [B14] Blanchet, Living Rev. Relativ. 17, 2 (2014) — flujo PN: dx/dt a 2.5PN (TaylorT4)
 //  [BCW06] Berti, Cardoso & Will, PRD 73, 064030 (2006) — ajuste de QNM
 //  [JF17] Jiménez-Forteza et al., PRD 95, 064024 (2017) — masa/espín finales (tabla vía LALSuite)
-// LIMITES: inspiral PN (sin espines) + ringdown didáctico unido por mezcla suave.
-// No es relatividad numérica: no usar para inferencia de parámetros.
+// Nota: se usa TaylorT4 (integra dx/dt) y NO TaylorT3: la serie cerrada de T3 a 2.5PN deja de ser
+// monótona a ~31 Hz para M≈65 Msun y no llega al chirp real (verificado contra LALSuite).
+// LIMITES: inspiral PN sin espines, extendido hasta x_end (v/c≈0.5, más allá del ISCO, donde PN ya
+// no es rigurosa) + ringdown didáctico unido por mezcla suave. No es relatividad numérica: no usar
+// para inferencia de parámetros.
 
 export const TSUN = 4.925490947e-6;      // G·Msun/c^3 [s]
 export const MPC_S = 3.0856775814913673e22 / 299792458; // Mpc/c [s]
@@ -16,21 +19,39 @@ export function massParams(m1, m2) {
   return { M, eta, Mc: Math.pow(eta, 0.6) * M };
 }
 
-/** Frecuencia GW f(τ) [Hz], τ = tc − t [s]; TaylorT3 a 2.5PN [B14]. */
-export function fGW(tau, m1, m2) {
-  const { M, eta } = massParams(m1, m2), Ms = M * TSUN;
-  const th = (eta * tau) / (5 * Ms);
-  const t8 = Math.pow(th, -0.25);          // Θ^(-1/4)
-  const x = Math.pow(th, -3 / 8) / (8 * Math.PI * Ms);
-  return x * (1
-    + (743 / 2688 + 11 * eta / 32) * t8
-    - (3 * Math.PI / 10) * Math.pow(th, -3 / 8)
-    + (1855099 / 14450688 + 56975 * eta / 258048 + 371 * eta * eta / 2048) * Math.pow(th, -0.5)
-    - (7729 / 21504 - 3 * eta / 256) * Math.PI * Math.pow(th, -5 / 8));
+/** dx/dt a 2.5PN [B14, eq. 314], x=(Mω)^(2/3), Ms = G·M/c³ [s]. */
+export function dxdt(x, eta, Ms) {
+  const s = Math.sqrt(x), x15 = x * s, x2 = x * x, x25 = x2 * s;
+  const b = 1 - (743 / 336 + (11 * eta) / 4) * x + 4 * Math.PI * x15
+    + (34103 / 18144 + (13661 * eta) / 2016 + (59 * eta * eta) / 18) * x2
+    - (4159 / 672 + (189 * eta) / 8) * Math.PI * x25;
+  return ((64 * eta) / (5 * Ms)) * Math.pow(x, 5) * b;
 }
 
 /** f_ISCO (Schwarzschild, GW) [Hz] */
 export const fISCO = (M) => 1 / (Math.PI * Math.pow(6, 1.5) * M * TSUN);
+
+/**
+ * Inspiral TaylorT4 2.5PN integrado con RK4 desde fLow hasta x_end; t=0 en la última muestra.
+ * Devuelve {t[], x[], f[] (GW, Hz), phi[] (fase GW = 2·fase orbital)}.
+ */
+export function inspiral({ m1, m2, fs = 4096, fLow = 20, xEnd = 0.25 }) {
+  const { M, eta } = massParams(m1, m2), Ms = M * TSUN, h = 1 / fs;
+  let x = Math.pow(Math.PI * Ms * fLow, 2 / 3), phi = 0;
+  const X = [], PH = [];
+  const w = (xx) => Math.pow(xx, 1.5) / Ms;          // ω orbital
+  for (let guard = 0; x < xEnd && guard < 5e7; guard++) {
+    X.push(x); PH.push(2 * phi);
+    const k1 = dxdt(x, eta, Ms), p1 = w(x);
+    const k2 = dxdt(x + 0.5 * h * k1, eta, Ms), p2 = w(x + 0.5 * h * k1);
+    const k3 = dxdt(x + 0.5 * h * k2, eta, Ms), p3 = w(x + 0.5 * h * k2);
+    const k4 = dxdt(x + h * k3, eta, Ms), p4 = w(x + h * k3);
+    x += (h / 6) * (k1 + 2 * k2 + 2 * k3 + k4); phi += (h / 6) * (p1 + 2 * p2 + 2 * p3 + p4);
+    if (!(x > X[X.length - 1])) break;                // la serie dejó de crecer: parar
+  }
+  const n = X.length;
+  return { t: X.map((_, i) => (i - (n - 1)) * h), x: X, phi: PH, f: X.map((v) => Math.pow(v, 1.5) / (Math.PI * Ms)) };
+}
 
 // Tabla η → (M_f/M, a_f), ajustes NR de [JF17] evaluados con LALSuite (ver fixture).
 export function finalState(eta, table) {
@@ -48,37 +69,24 @@ export function qnm220(Mf, af) {
 }
 
 /**
- * Forma de onda h(t) cara-sobre (ι=0), t=0 en la fusión.
- * Devuelve { t[], h[], f[], fRing, mf, af }.
+ * Forma de onda h(t) cara-sobre (ι=0), t=0 al final del inspiral (≈ fusión).
+ * Devuelve { t[], h[], f[], a[], p[], nInsp, fRing, mf, af, fEnd, eta, Mc }.
  */
-export function waveform({ m1, m2, distMpc = 410, fs = 4096, fLow = 20, finalTable, tail = 0.05 }) {
-  const { M, Mc, eta } = massParams(m1, m2), dt = 1 / fs, D = distMpc * MPC_S;
-  const fEnd = fISCO(M);
-  // τ en el que f(τ)=fLow y en el que f=fISCO (bisección; f decrece con τ)
-  const solve = (ft) => { let lo = 1e-6, hi = 1e4;
-    for (let k = 0; k < 200; k++) { const mid = Math.sqrt(lo * hi); (fGW(mid, m1, m2) > ft ? lo = mid : hi = mid); }
-    return Math.sqrt(lo * hi); };
-  const tauStart = solve(fLow);
-  const t = [], h = [], f = []; let phi = 0, k = 0, tau = tauStart, last = 0;
-  for (; tau > 1e-4; tau -= dt, k++) {
-    const fi = fGW(tau, m1, m2);
-    // La serie PN deja de ser monótona cerca de la fusión: paramos en ISCO o al dejar de crecer.
-    if (!Number.isFinite(fi) || fi >= fEnd || (f.length && fi <= f[f.length - 1])) break;
-    phi += 2 * Math.PI * fi * dt;
-    const A = (4 * Math.pow(Mc * TSUN, 5 / 3) * Math.pow(Math.PI * fi, 2 / 3)) / D;
-    t.push(-tau); h.push(A * Math.cos(phi)); f.push(fi); last = A;
-  }
-  const fInspEnd = f[f.length - 1];
-  let fRing = null, mf = null, af = null;
+export function waveform({ m1, m2, distMpc = 410, fs = 4096, fLow = 20, finalTable, tail = 0.05, xEnd = 0.25 }) {
+  const { M, Mc, eta } = massParams(m1, m2), D = distMpc * MPC_S, ins = inspiral({ m1, m2, fs, fLow, xEnd });
+  const t = ins.t.slice(), f = ins.f.slice(), p = ins.phi.slice(), dt = 1 / fs;
+  const a = f.map((fi) => (4 * Math.pow(Mc * TSUN, 5 / 3) * Math.pow(Math.PI * fi, 2 / 3)) / D);
+  const h = a.map((A, i) => A * Math.cos(p[i])), nInsp = t.length, fInspEnd = f[nInsp - 1], last = a[nInsp - 1];
+  let fRing = null, mf = null, af = null, phi = p[nInsp - 1];
   if (finalTable) {
     ({ mf, af } = finalState(eta, finalTable)); mf *= M;
     const q = qnm220(mf, af); fRing = q.f;
-    const t0 = t[t.length - 1], blend = 3 / f[f.length - 1];     // transición f: fISCO → fRing en ~3 ciclos
+    const blend = 3 / fInspEnd;                        // transición f: f_fin → f_ring en ~3 ciclos
     for (let j = 1; j <= Math.ceil(tail * fs); j++) {
-      const s = j * dt, w = Math.min(1, s / blend), fi = f[f.length - 1] + (fRing - f[f.length - 1]) * w;
+      const s = j * dt, wgt = Math.min(1, s / blend), fi = fInspEnd + (fRing - fInspEnd) * wgt, am = last * Math.exp(-s / q.tau);
       phi += 2 * Math.PI * fi * dt;
-      t.push(t0 + s); h.push(last * Math.exp(-s / q.tau) * Math.cos(phi)); f.push(fi);
+      t.push(s); h.push(am * Math.cos(phi)); f.push(fi); a.push(am); p.push(phi);
     }
   }
-  return { t, h, f, fRing, mf, af, fEnd: fInspEnd, eta, Mc };
+  return { t, h, f, a, p, nInsp, fRing, mf, af, fEnd: fInspEnd, eta, Mc };
 }

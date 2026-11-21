@@ -54,21 +54,25 @@ export function whitenBand(h, fs, F, A, band = [35, 350]) {
 }
 
 /**
- * Filtro adaptado por correlación directa para desplazamientos |s| ≤ maxShift.
+ * Filtro adaptado (correlación cruzada por FFT) para desplazamientos |s| ≤ maxShift.
  * z[s] = Σ_t d[t]·w[t−s]. El pico se busca en |s| ≤ peakWin; σ(z) se estima fuera de |s| > excl
  * (estimación LOCAL en esta ventana: no sustituye a un fondo de decenas de segundos).
  */
 export function matchFilter(d, w, fs, { maxShift = 0.25, peakWin = 0.06, excl = 0.1 } = {}) {
   const N = d.length, S = Math.round(maxShift * fs), z = new Float64Array(2 * S + 1);
-  let ww = 0; for (let i = 0; i < N; i++) ww += w[i] * w[i];
-  for (let s = -S; s <= S; s++) {
-    let acc = 0; const t0 = Math.max(0, s), t1 = Math.min(N, N + s);
-    for (let t = t0; t < t1; t++) acc += d[t] * w[t - s];
-    z[s + S] = acc;
+  let P = 1; while (P < 2 * N) P <<= 1;
+  const dr = new Float64Array(P), di = new Float64Array(P), wr = new Float64Array(P), wi = new Float64Array(P);
+  let ww = 0; for (let i = 0; i < N; i++) { dr[i] = d[i]; wr[i] = w[i]; ww += w[i] * w[i]; }
+  fft(dr, di); fft(wr, wi);
+  for (let k = 0; k < P; k++) {                       // D·conj(W): correlación cruzada por FFT (P ≥ 2N → sin solape circular)
+    const a = dr[k], b = di[k], c = wr[k], e = wi[k];
+    dr[k] = a * c + b * e; di[k] = b * c - a * e;
   }
-  const P = Math.round(peakWin * fs), E = Math.round(excl * fs);
+  fft(dr, di, true);
+  for (let s = -S; s <= S; s++) z[s + S] = dr[(s + P) % P];   // z[s] = Σ_t d[t]·w[t−s]
+  const Pw = Math.round(peakWin * fs), E = Math.round(excl * fs);
   let best = 0, bs = 0;
-  for (let s = -P; s <= P; s++) if (Math.abs(z[s + S]) > best) { best = Math.abs(z[s + S]); bs = s; }
+  for (let s = -Pw; s <= Pw; s++) if (Math.abs(z[s + S]) > best) { best = Math.abs(z[s + S]); bs = s; }
   let n = 0, m2 = 0;
   for (let s = -S; s <= S; s++) if (Math.abs(s) > E) { n++; m2 += z[s + S] * z[s + S]; }
   const sigma = Math.sqrt(m2 / Math.max(n, 1));

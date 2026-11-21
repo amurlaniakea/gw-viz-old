@@ -31,15 +31,29 @@
   </section>
 
   <section class="panel wide">
+    <h2>0 · La fusión, a escala</h2>
+    <div class="orbit">
+      <canvas id="c-orbit" role="img" aria-label="Dos agujeros negros orbitando y fusionándose, con el campo de ondas gravitacionales en espiral"></canvas>
+      <div>
+        <div class="row"><button id="b-play">▶ Reproducir</button>
+          <select id="o-speed" aria-label="Velocidad de la simulación"><option value="0.01">cámara muy lenta</option><option value="0.05" selected>cámara lenta</option><option value="0.2">lenta</option><option value="1">tiempo real</option></select></div>
+        <input id="t-slider" type="range" min="0" max="1000" value="0" aria-label="Instante de la simulación">
+        <dl id="o-out"></dl>
+      </div>
+    </div>
+    <p class="note">Vista cara-sobre. Los discos tienen el radio de Schwarzschild 2Gm/c² a la misma escala que la separación (1PN, coordenadas armónicas). Naranja/azul: signo de h₊ con tiempo retardado; la amplitud decae como 1/r. Los mismos instantes se marcan con una línea blanca en los paneles 1 y 2.</p>
+  </section>
+
+  <section class="panel wide">
     <h2>1 · Datos blanqueados y plantilla ajustada</h2>
-    <canvas id="c-strain" role="img" aria-label="Señal blanqueada de H1 y L1 con la plantilla ajustada"></canvas>
+    <div class="cv"><canvas id="c-strain" role="img" aria-label="Señal blanqueada de H1 y L1 con la plantilla ajustada"></canvas><i class="cur" id="cur-strain"></i></div>
     <p class="note">Unidades: σ del ruido de fondo. Línea naranja = plantilla ajustada por filtro adaptado (amplitud, instante y signo ajustados a los datos; la forma depende solo de m₁ y m₂).</p>
   </section>
 
   <section class="panel wide">
     <h2>2 · Espectrograma: el «chirp»</h2>
     <label class="inline">Detector <select id="det"><option>H1</option><option>L1</option></select></label>
-    <canvas id="c-spec" role="img" aria-label="Espectrograma tiempo-frecuencia con la frecuencia predicha por la plantilla"></canvas>
+    <div class="cv"><canvas id="c-spec" role="img" aria-label="Espectrograma tiempo-frecuencia con la frecuencia predicha por la plantilla"></canvas><i class="cur" id="cur-spec"></i></div>
     <p class="note">La frecuencia sube al acercarse la fusión. La línea discontinua es la predicción post-newtoniana (2.5PN) y, tras la fusión, la frecuencia de ringdown del agujero negro final.</p>
   </section>
 
@@ -53,7 +67,7 @@
     <h2>Qué hay detrás (y qué NO es)</h2>
     <ul>
       <li><b>Datos:</b> GWOSC, 4096 Hz, licencia CC BY 4.0. Pipeline: PSD de Welch (mediana) → blanqueado → paso banda 35–350 Hz. Reproducible con <code>scripts/build_data.py</code>.</li>
-      <li><b>Plantilla:</b> inspiral post-newtoniano a 2.5PN (TaylorT3, Blanchet 2014, <i>Living Rev. Relativ.</i> 17, 2) validado contra LALSuite &lt;1 %; ringdown con modo cuasinormal 220 (Berti, Cardoso &amp; Will 2006) y masa/espín finales de los ajustes NR de Jiménez-Forteza et al. 2017.</li>
+      <li><b>Plantilla:</b> inspiral post-newtoniano a 2.5PN (TaylorT4, Blanchet 2014, <i>Living Rev. Relativ.</i> 17, 2) integrado hasta v/c≈0,5 y validado contra TaylorT4 de LALSuite (&lt;0,7 % en f(t)); ringdown con modo cuasinormal 220 (Berti, Cardoso &amp; Will 2006) y masa/espín finales de los ajustes NR de Jiménez-Forteza et al. 2017.</li>
       <li><b>SNR mostrado:</b> estimación <i>local</i> en esta ventana de 1 s. No sustituye al análisis oficial (SNR de red ≈ 24, Abbott et al. 2016, <i>PRL</i> 116, 061102).</li>
       <li><b>Degeneración:</b> los datos fijan bien la masa de chirp 𝓜; m₁ y m₂ por separado, mucho peor. Prueba «Optimizar» y verás una cresta, no un punto.</li>
       <li><b>Límites:</b> sin espines ni precesión; fusión y ringdown son una unión didáctica, no relatividad numérica. No sirve para inferencia de parámetros.</li>
