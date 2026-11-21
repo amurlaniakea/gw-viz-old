@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GW Lab · Ondas gravitacionales con datos reales de LIGO</title>
+<meta name="description" content="Laboratorio interactivo: datos reales de GW150914 (GWOSC), filtro adaptado, espectrograma y plantilla post-newtoniana validada contra LALSuite.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌌%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>GW Lab <span>· ondas gravitacionales con datos reales</span></h1>
+  <p>Datos públicos de LIGO (GWOSC) de <b>GW150914</b>, la primera detección directa (14-sep-2015). Mueve las masas y comprueba cuánto se parece tu plantilla a lo que oyeron los detectores.</p>
+</header>
+<main>
+  <section class="panel controls" aria-label="Controles">
+    <label>Masa 1: <b id="v-m1">36.0</b> M☉<input id="m1" type="range" min="10" max="80" step="0.5" value="36"></label>
+    <label>Masa 2: <b id="v-m2">29.0</b> M☉<input id="m2" type="range" min="10" max="80" step="0.5" value="29"></label>
+    <div class="row">
+      <button id="b-pub" title="Valores de Abbott et al. 2016">Valores publicados</button>
+      <button id="b-opt" title="Maximiza el SNR de la red H1+L1">Optimizar con los datos</button>
+    </div>
+    <div class="row">
+      <button id="b-snd-data">🔊 Dato real (H1)</button>
+      <button id="b-snd-tpl">🔊 Plantilla</button>
+      <select id="speed" aria-label="Velocidad de reproducción"><option value="1">1×</option><option value="0.5">0,5×</option><option value="2">2×</option></select>
+    </div>
+    <dl id="out"></dl>
+    <p id="status" class="note" role="status">Cargando datos…</p>
+  </section>
+
+  <section class="panel wide">
+    <h2>1 · Datos blanqueados y plantilla ajustada</h2>
+    <canvas id="c-strain" role="img" aria-label="Señal blanqueada de H1 y L1 con la plantilla ajustada"></canvas>
+    <p class="note">Unidades: σ del ruido de fondo. Línea naranja = plantilla ajustada por filtro adaptado (amplitud, instante y signo ajustados a los datos; la forma depende solo de m₁ y m₂).</p>
+  </section>
+
+  <section class="panel wide">
+    <h2>2 · Espectrograma: el «chirp»</h2>
+    <label class="inline">Detector <select id="det"><option>H1</option><option>L1</option></select></label>
+    <canvas id="c-spec" role="img" aria-label="Espectrograma tiempo-frecuencia con la frecuencia predicha por la plantilla"></canvas>
+    <p class="note">La frecuencia sube al acercarse la fusión. La línea discontinua es la predicción post-newtoniana (2.5PN) y, tras la fusión, la frecuencia de ringdown del agujero negro final.</p>
+  </section>
+
+  <section class="panel wide">
+    <h2>3 · Sensibilidad del detector (ASD)</h2>
+    <canvas id="c-asd" role="img" aria-label="Densidad espectral de amplitud de H1 y L1"></canvas>
+    <p class="note">Ruido en cada frecuencia. El blanqueado divide los datos por esta curva; la banda 35–350 Hz es donde la señal destaca.</p>
+  </section>
+
+  <section class="panel wide learn">
+    <h2>Qué hay detrás (y qué NO es)</h2>
+    <ul>
+      <li><b>Datos:</b> GWOSC, 4096 Hz, licencia CC BY 4.0. Pipeline: PSD de Welch (mediana) → blanqueado → paso banda 35–350 Hz. Reproducible con <code>scripts/build_data.py</code>.</li>
+      <li><b>Plantilla:</b> inspiral post-newtoniano a 2.5PN (TaylorT3, Blanchet 2014, <i>Living Rev. Relativ.</i> 17, 2) validado contra LALSuite &lt;1 %; ringdown con modo cuasinormal 220 (Berti, Cardoso &amp; Will 2006) y masa/espín finales de los ajustes NR de Jiménez-Forteza et al. 2017.</li>
+      <li><b>SNR mostrado:</b> estimación <i>local</i> en esta ventana de 1 s. No sustituye al análisis oficial (SNR de red ≈ 24, Abbott et al. 2016, <i>PRL</i> 116, 061102).</li>
+      <li><b>Degeneración:</b> los datos fijan bien la masa de chirp 𝓜; m₁ y m₂ por separado, mucho peor. Prueba «Optimizar» y verás una cresta, no un punto.</li>
+      <li><b>Límites:</b> sin espines ni precesión; fusión y ringdown son una unión didáctica, no relatividad numérica. No sirve para inferencia de parámetros.</li>
+    </ul>
+  </section>
+</main>
+<footer>© Pedro Sordo Martínez · AGPL-3.0-or-later · Datos: GWOSC (CC BY 4.0) · <a href="https://github.com/amurlaniakea/gw-viz-old">código</a></footer>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
