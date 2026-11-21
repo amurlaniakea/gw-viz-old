@@ -31,13 +31,19 @@ test('el HTML por defecto es idéntico al diccionario español', () => {
   assert.ok(n >= 28, `solo ${n} elementos`);
 });
 
-test('el inglés no deja restos de español (salvo nombres propios) y difiere del español', () => {
-  const same = new Set(['ph_ins', 'ph_rd', 'lane_h1', 'lane_l1']);
-  for (const k of keys('en')) {
-    const en = STR.en[k], es = STR.es[k]; if (typeof en === 'function') continue;
-    const clean = en.replace(/Jiménez-Forteza|Martínez/g, '');
-    assert.ok(!/[áéíóúñ¿¡«»]/.test(clean), `acentos españoles en en.${k}: ${en}`);
-    if (!same.has(k)) assert.notEqual(en, es, `en.${k} sin traducir`);
+test('inglés y francés: sin restos de español (salvo nombres propios) y sin cadenas sin traducir', () => {
+  const same = new Set(['ph_ins', 'ph_rd', 'lane_h1', 'lane_l1', 'r_sh', 'r_sl', 'pause', 'o_ph', 'r_fr']);
+  const spanish = { en: /[áéíóúñ¿¡«»]/, fr: /[áíóúñ¿¡]/ };      // el francés comparte é è ê « »
+  for (const l of ['en', 'fr']) for (const k of keys(l)) {
+    const v = STR[l][k]; if (typeof v === 'function') continue;
+    assert.ok(!spanish[l].test(v.replace(/Jiménez-Forteza|Martínez/g, '')), `restos de español en ${l}.${k}: ${v}`);
+    if (!same.has(k)) { assert.notEqual(v, STR.es[k], `${l}.${k} igual que el español`); if (l === 'fr') assert.notEqual(v, STR.en[k], `fr.${k} igual que el inglés`); }
   }
   assert.match(STR.en.st_ok('X'), /Real data loaded: X/);
+  assert.match(STR.fr.st_ok('X'), /Données réelles chargées\u00a0: X/);
+});
+
+test('el selector de idioma ofrece exactamente los idiomas del diccionario', () => {
+  const sel = html.match(/<select id="lang"[^>]*>([\s\S]*?)<\/select>/)[1];
+  assert.deepEqual([...sel.matchAll(/value="(\w+)"/g)].map((m) => m[1]).sort(), Object.keys(STR).sort());
 });

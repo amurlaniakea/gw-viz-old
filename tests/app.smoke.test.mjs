@@ -38,4 +38,7 @@ test('app.js carga, analiza y dibuja sin excepciones', async () => {
   assert.match(els.out.innerHTML, /L1−H1 delay<\/dt><dd>6\.\d ms/);
   assert.match(els.status.textContent, /Real data loaded/);
   assert.match(els['o-out'].innerHTML, /Separation<\/dt>/);
+  els.lang.value = 'fr'; els.lang.onchange();
+  assert.match(els.out.innerHTML, /Retard L1−H1<\/dt><dd>6\.\d ms/);
+  assert.match(els.status.textContent, /Données réelles chargées/);
 });
