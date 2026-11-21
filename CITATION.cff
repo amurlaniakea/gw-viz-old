@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "Si usas este software, cítalo así."
+title: "GW Lab: laboratorio visual e interactivo de ondas gravitacionales con datos abiertos de LIGO"
+type: software
+authors:
+  - family-names: "Sordo Martínez"
+    given-names: "Pedro"
+license: AGPL-3.0-or-later
+repository-code: "https://github.com/amurlaniakea/gw-viz-old"
+version: "0.5.0"
+keywords: [gravitational waves, LIGO, GW150914, matched filtering, education]

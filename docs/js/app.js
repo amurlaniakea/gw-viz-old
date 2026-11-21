@@ -4,7 +4,7 @@ import { spectrogram, inferno } from './dsp.js';
 import { orbitAt, bhPositions, fieldImage } from './orbit.js';
 
 const $ = (id) => document.getElementById(id);
-const PUB = { m1: 36, m2: 29 };
+const PUB = { m1: 38.9, m2: 31.6 };   // marco del detector (z≈0.09): Abbott+ 2016, PRL 116, 241102, Tabla I
 let data, table, res, spec = {}, raf = 0, actx = null, T = 0, playing = false, lastTs = 0, ofc = null;
 
 function fit(c) {

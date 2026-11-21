@@ -89,10 +89,12 @@ def main():
     out = {"event": "GW150914", "gps": GPS_EVENT, "fs": FS, "band_hz": list(BAND),
            "window_s": list(WIN), "units": "sigma del fondo (blanqueado)",
            "source": "GWOSC (CC BY 4.0), 4 kHz" + (" — archivos locales" if a.local else ""), "detectors": {},
-           "meta": {   # Abbott et al., PRL 116, 061102 (2016)
-               "m1": 36, "m2": 29, "mf": 62, "af": 0.67, "e_rad_msun": 3.0,
-               "dist_mpc": 410, "snr_net": 24,
-               "ref": "Abbott et al., PRL 116, 061102 (2016), doi:10.1103/PhysRevLett.116.061102"}}
+           "meta": {   # Abbott et al., PRL 116, 241102 (2016), Tabla I (medianas); SNR de red: PRL 116, 061102
+               "z": 0.09, "dist_mpc": 410,
+               "detector_frame": {"m1": 38.9, "m2": 31.6, "m_total": 70.6, "mchirp": 30.4, "mf": 67.4},
+               "source_frame": {"m1": 36, "m2": 29, "mf": 62, "af": 0.67, "mchirp": 28.0},
+               "snr_net": 24,
+               "ref": "PRL 116, 061102 y 116, 241102 (2016), doi:10.1103/PhysRevLett.116.241102"}}
     for det in ("H1", "L1"):
         if a.local:
             import os

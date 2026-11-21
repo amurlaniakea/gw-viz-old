@@ -5,6 +5,12 @@ import { readFileSync } from 'node:fs';
 import { inspiral, qnm220, massParams, finalState, waveform, TSUN } from '../docs/js/physics.js';
 const ref = JSON.parse(readFileSync(new URL('./fixtures/lal_reference.json', import.meta.url)));
 
+test('marcos de referencia: masa de chirp del detector 30.4 ≈ (1+z)·fuente (z=0.09)', () => {
+  const det = massParams(38.9, 31.6).Mc, src = massParams(36, 29).Mc;
+  assert.ok(Math.abs(det - 30.4) < 0.3, `Mc detector ${det}`);
+  assert.ok(Math.abs(det / src - 1.09) < 0.02, `cociente ${det / src}`);
+});
+
 test('chirp mass de (35.6+30.6) Msun ≈ 28.7 Msun', () => {
   assert.ok(Math.abs(massParams(35.6, 30.6).Mc - 28.7) < 0.1);
 });
@@ -38,9 +44,9 @@ test('QNM 220: ajuste BCW06 vs Leaver exacto < 3% (f) y < 6% (decaimiento)', () 
   }
 });
 
-test('espín final GW150914 ≈ 0.69 y masa final ≈ 0.95 M (ajustes NR)', () => {
+test('espín final de GW150914 ≈ 0.67 (PRL 116, 241102) y masa final ≈ 0.95 M (ajustes NR)', () => {
   const { mf, af } = finalState(massParams(35.6, 30.6).eta, ref.final);
-  assert.ok(Math.abs(af - 0.69) < 0.02 && Math.abs(mf - 0.95) < 0.01);
+  assert.ok(Math.abs(af - 0.67) < 0.03 && Math.abs(mf - 0.95) < 0.01);
 });
 
 test('waveform: tiene chirp creciente y ringdown amortiguado', () => {
