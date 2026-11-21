@@ -10,72 +10,73 @@
 </head>
 <body>
 <header>
-  <h1>GW Lab <span>· ondas gravitacionales con datos reales</span></h1>
-  <p>Datos públicos de LIGO (GWOSC) de <b>GW150914</b>, la primera detección directa (14-sep-2015). Mueve las masas y comprueba cuánto se parece tu plantilla a lo que oyeron los detectores.</p>
+  <div class="lang"><select id="lang" aria-label="Idioma / Language"><option value="es">ES</option><option value="en">EN</option></select></div>
+  <h1>GW Lab <span data-i18n="h1sub">· ondas gravitacionales con datos reales</span></h1>
+  <p data-i18n-html="intro">Datos públicos de LIGO (GWOSC) de <b>GW150914</b>, la primera detección directa (14-sep-2015). Mueve las masas y comprueba cuánto se parece tu plantilla a lo que oyeron los detectores.</p>
 </header>
 <main>
-  <section class="panel controls" aria-label="Controles">
-    <label>Masa 1: <b id="v-m1">38.9</b> M☉<input id="m1" type="range" min="10" max="80" step="0.1" value="38.9"></label>
-    <label>Masa 2: <b id="v-m2">31.6</b> M☉<input id="m2" type="range" min="10" max="80" step="0.1" value="31.6"></label>
+  <section class="panel controls" aria-label="Controles" data-i18n-attr="aria-label:ctl">
+    <label><span data-i18n="m1">Masa 1:</span> <b id="v-m1">38.9</b> M☉<input id="m1" type="range" min="10" max="80" step="0.1" value="38.9"></label>
+    <label><span data-i18n="m2">Masa 2:</span> <b id="v-m2">31.6</b> M☉<input id="m2" type="range" min="10" max="80" step="0.1" value="31.6"></label>
     <div class="row">
-      <button id="b-pub" title="Medianas de Abbott et al. 2016 en el marco del detector: 38,9 y 31,6 M☉">Valores publicados</button>
-      <button id="b-opt" title="Maximiza el SNR de la red H1+L1">Optimizar con los datos</button>
+      <button id="b-pub" title="Medianas de Abbott et al. 2016 en el marco del detector: 38,9 y 31,6 M☉" data-i18n="bpub" data-i18n-attr="title:bpubt">Valores publicados</button>
+      <button id="b-opt" title="Maximiza el SNR de la red H1+L1" data-i18n="bopt" data-i18n-attr="title:boptt">Optimizar con los datos</button>
     </div>
     <div class="row">
-      <button id="b-snd-data">🔊 Dato real (H1)</button>
-      <button id="b-snd-tpl">🔊 Plantilla</button>
-      <select id="speed" aria-label="Velocidad de reproducción"><option value="1">1×</option><option value="0.5">0,5×</option><option value="2">2×</option></select>
+      <button id="b-snd-data" data-i18n="sdata">🔊 Dato real (H1)</button>
+      <button id="b-snd-tpl" data-i18n="stpl">🔊 Plantilla</button>
+      <select id="speed" aria-label="Velocidad de reproducción" data-i18n-attr="aria-label:spd"><option value="1">1×</option><option value="0.5">0,5×</option><option value="2">2×</option></select>
     </div>
     <dl id="out"></dl>
     <p id="status" class="note" role="status">Cargando datos…</p>
   </section>
 
   <section class="panel wide">
-    <h2>0 · La fusión, a escala</h2>
+    <h2 data-i18n="h0">0 · La fusión, a escala</h2>
     <div class="orbit">
-      <canvas id="c-orbit" role="img" aria-label="Dos agujeros negros orbitando y fusionándose, con el campo de ondas gravitacionales en espiral"></canvas>
+      <canvas id="c-orbit" role="img" aria-label="Dos agujeros negros orbitando y fusionándose, con el campo de ondas gravitacionales en espiral" data-i18n-attr="aria-label:aorb"></canvas>
       <div>
         <div class="row"><button id="b-play">▶ Reproducir</button>
-          <select id="o-speed" aria-label="Velocidad de la simulación"><option value="0.01">cámara muy lenta</option><option value="0.05" selected>cámara lenta</option><option value="0.2">lenta</option><option value="1">tiempo real</option></select></div>
-        <input id="t-slider" type="range" min="0" max="1000" value="0" aria-label="Instante de la simulación">
+          <select id="o-speed" aria-label="Velocidad de la simulación" data-i18n-attr="aria-label:ospd"><option value="0.01" data-i18n="sp1">cámara muy lenta</option><option value="0.05" selected data-i18n="sp2">cámara lenta</option><option value="0.2" data-i18n="sp3">lenta</option><option value="1" data-i18n="sp4">tiempo real</option></select></div>
+        <input id="t-slider" type="range" min="0" max="1000" value="0" aria-label="Instante de la simulación" data-i18n-attr="aria-label:tsl">
         <dl id="o-out"></dl>
       </div>
     </div>
-    <p class="note">Vista cara-sobre. Los discos tienen el radio de Schwarzschild 2Gm/c² a la misma escala que la separación (1PN, coordenadas armónicas). Naranja/azul: signo de h₊ con tiempo retardado; la amplitud decae como 1/r. Los mismos instantes se marcan con una línea blanca en los paneles 1 y 2.</p>
+    <p class="note" data-i18n="note0">Vista cara-sobre. Los discos tienen el radio de Schwarzschild 2Gm/c² a la misma escala que la separación (1PN, coordenadas armónicas). Naranja/azul: signo de h₊ con tiempo retardado; la amplitud decae como 1/r. Los mismos instantes se marcan con una línea blanca en los paneles 1 y 2.</p>
   </section>
 
   <section class="panel wide">
-    <h2>1 · Datos blanqueados y plantilla ajustada</h2>
-    <div class="cv"><canvas id="c-strain" role="img" aria-label="Señal blanqueada de H1 y L1 con la plantilla ajustada"></canvas><i class="cur" id="cur-strain"></i></div>
-    <p class="note">Unidades: σ del ruido de fondo. Línea naranja = plantilla ajustada por filtro adaptado (amplitud, instante y signo ajustados a los datos; la forma depende solo de m₁ y m₂).</p>
+    <h2 data-i18n="hp1">1 · Datos blanqueados y plantilla ajustada</h2>
+    <div class="cv"><canvas id="c-strain" role="img" aria-label="Señal blanqueada de H1 y L1 con la plantilla ajustada" data-i18n-attr="aria-label:astr"></canvas><i class="cur" id="cur-strain"></i></div>
+    <p class="note" data-i18n="note1">Unidades: σ del ruido de fondo. Línea naranja = plantilla ajustada por filtro adaptado (amplitud, instante y signo ajustados a los datos; la forma depende solo de m₁ y m₂).</p>
   </section>
 
   <section class="panel wide">
-    <h2>2 · Espectrograma: el «chirp»</h2>
+    <h2 data-i18n="hp2">2 · Espectrograma: el «chirp»</h2>
     <label class="inline">Detector <select id="det"><option>H1</option><option>L1</option></select></label>
-    <div class="cv"><canvas id="c-spec" role="img" aria-label="Espectrograma tiempo-frecuencia con la frecuencia predicha por la plantilla"></canvas><i class="cur" id="cur-spec"></i></div>
-    <p class="note">La frecuencia sube al acercarse la fusión. La línea discontinua es la predicción post-newtoniana (2.5PN) y, tras la fusión, la frecuencia de ringdown del agujero negro final.</p>
+    <div class="cv"><canvas id="c-spec" role="img" aria-label="Espectrograma tiempo-frecuencia con la frecuencia predicha por la plantilla" data-i18n-attr="aria-label:aspc"></canvas><i class="cur" id="cur-spec"></i></div>
+    <p class="note" data-i18n="note2">La frecuencia sube al acercarse la fusión. La línea discontinua es la predicción post-newtoniana (2.5PN) y, tras la fusión, la frecuencia de ringdown del agujero negro final.</p>
   </section>
 
   <section class="panel wide">
-    <h2>3 · Sensibilidad del detector (ASD)</h2>
-    <canvas id="c-asd" role="img" aria-label="Densidad espectral de amplitud de H1 y L1"></canvas>
-    <p class="note">Ruido en cada frecuencia. El blanqueado divide los datos por esta curva; la banda 35–350 Hz es donde la señal destaca.</p>
+    <h2 data-i18n="hp3">3 · Sensibilidad del detector (ASD)</h2>
+    <canvas id="c-asd" role="img" aria-label="Densidad espectral de amplitud de H1 y L1" data-i18n-attr="aria-label:aasd"></canvas>
+    <p class="note" data-i18n="note3">Ruido en cada frecuencia. El blanqueado divide los datos por esta curva; la banda 35–350 Hz es donde la señal destaca.</p>
   </section>
 
   <section class="panel wide learn">
-    <h2>Qué hay detrás (y qué NO es)</h2>
+    <h2 data-i18n="hl">Qué hay detrás (y qué NO es)</h2>
     <ul>
-      <li><b>Datos:</b> GWOSC, 4096 Hz, licencia CC BY 4.0. Pipeline: PSD de Welch (mediana) → blanqueado → paso banda 35–350 Hz. Reproducible con <code>scripts/build_data.py</code>.</li>
-      <li><b>Plantilla:</b> inspiral post-newtoniano a 2.5PN (TaylorT4, Blanchet 2014, <i>Living Rev. Relativ.</i> 17, 2) integrado hasta v/c≈0,5 y validado contra TaylorT4 de LALSuite (&lt;0,7 % en f(t)); ringdown con modo cuasinormal 220 (Berti, Cardoso &amp; Will 2006) y masa/espín finales de los ajustes NR de Jiménez-Forteza et al. 2017.</li>
-      <li><b>SNR mostrado:</b> estimación <i>local</i> en esta ventana de 1 s. No sustituye al análisis oficial (SNR de red ≈ 24, Abbott et al. 2016, <i>PRL</i> 116, 061102).</li>
-      <li><b>Marcos de referencia:</b> las masas de los sliders están en el <i>marco del detector</i> (corridas al rojo, z≈0,09). Las de la fuente son ≈1/(1+z) veces menores: 36 y 29 M☉ → 38,9 y 31,6 M☉ aquí (<i>PRL</i> 116, 241102, Tabla I).</li>
-      <li><b>Degeneración:</b> los datos fijan bien la masa de chirp 𝓜; m₁ y m₂ por separado, mucho peor. Prueba «Optimizar» y verás una cresta, no un punto.</li>
-      <li><b>Límites:</b> sin espines ni precesión; fusión y ringdown son una unión didáctica, no relatividad numérica. No sirve para inferencia de parámetros.</li>
+      <li data-i18n-html="l1"><b>Datos:</b> GWOSC, 4096 Hz, licencia CC BY 4.0. Pipeline: PSD de Welch (mediana) → blanqueado → paso banda 35–350 Hz. Reproducible con <code>scripts/build_data.py</code>.</li>
+      <li data-i18n-html="l2"><b>Plantilla:</b> inspiral post-newtoniano a 2.5PN (TaylorT4, Blanchet 2014, <i>Living Rev. Relativ.</i> 17, 2) integrado hasta v/c≈0,5 y validado contra TaylorT4 de LALSuite (&lt;0,7 % en f(t)); ringdown con modo cuasinormal 220 (Berti, Cardoso &amp; Will 2006) y masa/espín finales de los ajustes NR de Jiménez-Forteza et al. 2017.</li>
+      <li data-i18n-html="l3"><b>SNR mostrado:</b> estimación <i>local</i> en esta ventana de 1 s. No sustituye al análisis oficial (SNR de red ≈ 24, Abbott et al. 2016, <i>PRL</i> 116, 061102).</li>
+      <li data-i18n-html="l4"><b>Marcos de referencia:</b> las masas de los sliders están en el <i>marco del detector</i> (corridas al rojo, z≈0,09). Las de la fuente son ≈1/(1+z) veces menores: 36 y 29 M☉ → 38,9 y 31,6 M☉ aquí (<i>PRL</i> 116, 241102, Tabla I).</li>
+      <li data-i18n-html="l5"><b>Degeneración:</b> los datos fijan bien la masa de chirp 𝓜; m₁ y m₂ por separado, mucho peor. Prueba «Optimizar» y verás una cresta, no un punto.</li>
+      <li data-i18n-html="l6"><b>Límites:</b> sin espines ni precesión; fusión y ringdown son una unión didáctica, no relatividad numérica. No sirve para inferencia de parámetros.</li>
     </ul>
   </section>
 </main>
-<footer>© Pedro Sordo Martínez · AGPL-3.0-or-later · Datos: GWOSC (CC BY 4.0) · <a href="https://github.com/amurlaniakea/gw-viz-old">código</a></footer>
+<footer data-i18n-html="foot">© Pedro Sordo Martínez · AGPL-3.0-or-later · Datos: GWOSC (CC BY 4.0) · <a href="https://github.com/amurlaniakea/gw-viz-old">código</a></footer>
 <script type="module" src="js/app.js"></script>
 </body>
 </html>

@@ -15,6 +15,7 @@ datos blanqueados de Hanford y Livingston, plantilla post-newtoniana ajustada po
 - «Optimizar con los datos»: el ajuste revela que la **masa de chirp** está bien determinada pero m₁ y m₂ por separado no (una cresta, no un punto).
 - Reproducir la fusión en cámara lenta (separación en M y km, velocidad orbital, ondas en espiral con tiempo retardado) con cursor sincronizado en la señal y el espectrograma.
 - Escuchar el dato real y la plantilla.
+- Cambiar la interfaz entre **español e inglés** (selector arriba a la derecha; se recuerda tu elección). Añadir otro idioma = añadir un objeto en `docs/js/i18n.js`; `tests/i18n.test.mjs` exige que todas las claves existan en todos los idiomas.
 
 ## Ciencia y validación
 
@@ -39,7 +40,7 @@ marco del detector** (corridas al rojo, z≈0,09): 38,9 y 31,6 M☉ ↔ 36 y 29 
 
 ## Ejecutar y reproducir
 
-    npm test                                   # 16 tests (Node ≥ 20)
+    npm test                                   # 20 tests (Node ≥ 20)
     python3 -m http.server -d docs 8000        # abre http://localhost:8000
 
 Regenerar los datos reales (necesita `numpy scipy` y `h5py`, o `gwpy` para descargar):

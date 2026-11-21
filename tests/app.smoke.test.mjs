@@ -22,7 +22,8 @@ test('app.js carga, analiza y dibuja sin excepciones', async () => {
     get: (t, k) => (k === 'createImageData' ? (a, b) => ({ data: new Uint8ClampedArray(a * b * 4) }) : noop), apply: () => noop, set: () => true });
   const mk = (id) => ({ id, value: { m1: '36', m2: '29', det: 'H1', speed: '1' }[id] ?? '', textContent: '', innerHTML: '', clientWidth: 700, clientHeight: 300, style: {}, 
     addEventListener() {}, getContext: () => noop });
-  Object.assign(globalThis, { document: { getElementById: (id) => (els[id] ||= mk(id)), createElement: () => mk('off') },
+  Object.defineProperty(globalThis, 'navigator', { value: { language: 'es-ES' }, configurable: true });
+  Object.assign(globalThis, { document: { getElementById: (id) => (els[id] ||= mk(id)), createElement: () => mk('off'), querySelector: () => null, querySelectorAll: () => [], documentElement: {}, title: '' },
     devicePixelRatio: 2, addEventListener() {}, requestAnimationFrame: () => 0, cancelAnimationFrame() {},
     fetch: async (u) => ({ ok: true, json: async () => (u.includes('final_state') ? finalState : synthetic) }) });
   globalThis.window = globalThis;
@@ -33,4 +34,8 @@ test('app.js carga, analiza y dibuja sin excepciones', async () => {
   assert.match(els.out.innerHTML, /\+ \/ −/);
   assert.match(els['o-out'].innerHTML, /Separación<\/dt><dd>\d+\.\d M = \d+ km/);
   els['b-play'].onclick(); els['b-play'].onclick(); els['b-pub'].onclick();
+  els.lang.value = 'en'; els.lang.onchange();                       // cambio de idioma en caliente
+  assert.match(els.out.innerHTML, /L1−H1 delay<\/dt><dd>6\.\d ms/);
+  assert.match(els.status.textContent, /Real data loaded/);
+  assert.match(els['o-out'].innerHTML, /Separation<\/dt>/);
 });

@@ -27,3 +27,4 @@ footer{color:var(--mute);font-size:.85rem}footer a{color:var(--acc)}
 #c-orbit{aspect-ratio:1;height:auto}
 .cv{position:relative}.cur{position:absolute;top:0;bottom:0;width:2px;background:#ffffffb0;pointer-events:none;left:-10px}
 @media(max-width:700px){.orbit{grid-template-columns:1fr}}
+.lang{position:absolute;top:.8rem;right:1rem}header{position:relative}.lang select{padding:.25rem .5rem}
