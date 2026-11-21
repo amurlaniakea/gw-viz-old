@@ -2,10 +2,13 @@
 import { analyze, optimize } from './lab.js';
 import { spectrogram, inferno } from './dsp.js';
 import { orbitAt, bhPositions, fieldImage } from './orbit.js';
+import { t, initLang, setLang, getLang, apply } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 const PUB = { m1: 38.9, m2: 31.6 };   // marco del detector (z≈0.09): Abbott+ 2016, PRL 116, 241102, Tabla I
-let data, table, res, spec = {}, raf = 0, actx = null, T = 0, playing = false, lastTs = 0, ofc = null;
+let data, table, res, spec = {}, raf = 0, actx = null, T = 0, playing = false, lastTs = 0, ofc = null, st = ['st_loading'];
+const setStatus = (...k) => { st = k; $('status').textContent = t(...k); };
+const playLabel = () => { $('b-play').textContent = t(playing ? 'pause' : 'play'); };
 
 function fit(c) {
   const r = window.devicePixelRatio || 1, w = c.clientWidth || 600, h = c.clientHeight || 300;
@@ -16,22 +19,24 @@ function fit(c) {
 const fmt = (v, d = 1) => (Number.isFinite(v) ? v.toFixed(d) : '—');
 
 async function init() {
+  initLang(); $('lang').value = getLang(); apply(); setStatus('st_loading'); playLabel();
+  $('lang').onchange = () => { setLang($('lang').value); setStatus(...st); playLabel(); if (res) update(); };
   try {
     [data, table] = await Promise.all(['data/gw150914.json', 'data/final_state.json'].map((u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u + ' → ' + r.status); return r.json(); })));
-  } catch (e) { $('status').textContent = 'No se pudieron cargar los datos (' + e.message + '). Genera docs/data con scripts/build_data.py.'; return; }
+  } catch (e) { setStatus('st_err', e.message); return; }
   for (const [n, d] of Object.entries(data.detectors)) {
     const sp = spectrogram(Float64Array.from(d.whitened), data.fs), lo = Math.ceil(30 / sp.df), vals = [];
     for (const row of sp.frames) for (let k = lo; k < sp.nbins; k++) vals.push(row[k]);
     vals.sort((a, b) => a - b); spec[n] = { ...sp, vmax: vals[Math.floor(vals.length * 0.995)] || 1 };
   }
-  $('status').textContent = 'Datos reales cargados: ' + data.source + '.';
+  setStatus('st_ok', data.source);
   ['m1', 'm2'].forEach((k) => $(k).addEventListener('input', schedule));
   $('b-pub').onclick = () => setMasses(PUB.m1, PUB.m2);
-  $('b-opt').onclick = () => { $('status').textContent = 'Optimizando…'; setTimeout(() => { const o = optimize(data, table); setMasses(o.m1, o.m2); $('status').textContent = 'Optimizado sobre el SNR de red (ver la degeneración m₁–m₂).'; }, 20); };
+  $('b-opt').onclick = () => { setStatus('st_opt'); setTimeout(() => { const o = optimize(data, table); setMasses(o.m1, o.m2); setStatus('st_optdone'); }, 20); };
   $('b-snd-data').onclick = () => play(res.det.H1.x);
   $('b-snd-tpl').onclick = () => play(res.det.H1.fit);
   $('det').onchange = () => { draw(); }; addEventListener('resize', draw);
-  $('b-play').onclick = () => { playing = !playing; $('b-play').textContent = playing ? '⏸ Pausa' : '▶ Reproducir'; if (playing) { lastTs = 0; requestAnimationFrame(tick); } };
+  $('b-play').onclick = () => { playing = !playing; playLabel(); if (playing) { lastTs = 0; requestAnimationFrame(tick); } };
   $('t-slider').addEventListener('input', () => { T = res.wf.t[0] + (+$('t-slider').value / 1000) * (res.wf.t.at(-1) - res.wf.t[0]); frame(); });
   update();
 }
@@ -44,10 +49,10 @@ function update() {
   res = analyze(data, table, m1, m2);
   if (!(T >= res.wf.t[0] && T <= res.wf.t.at(-1))) T = res.wf.t[0];
   const H = res.det.H1, L = res.det.L1, rows = [
-    ['Masa de chirp 𝓜', fmt(res.Mc, 2) + ' M☉'], ['Razón simétrica η', fmt(res.eta, 3)],
-    ['Masa final', fmt(res.mf, 1) + ' M☉'], ['Espín final', fmt(res.af, 2)], ['f ringdown', fmt(res.fRing, 0) + ' Hz'],
-    ['SNR local H1', fmt(H.snr)], ['SNR local L1', fmt(L.snr)], ['SNR red (local)', fmt(res.snrNet)],
-    ['Retardo L1−H1', fmt(res.dt * 1000, 1) + ' ms'], ['Polaridad H1 / L1', (H.sign > 0 ? '+' : '−') + ' / ' + (L.sign > 0 ? '+' : '−')]];
+    [t('r_mc'), fmt(res.Mc, 2) + ' M☉'], [t('r_eta'), fmt(res.eta, 3)],
+    [t('r_mf'), fmt(res.mf, 1) + ' M☉'], [t('r_af'), fmt(res.af, 2)], [t('r_fr'), fmt(res.fRing, 0) + ' Hz'],
+    [t('r_sh'), fmt(H.snr)], [t('r_sl'), fmt(L.snr)], [t('r_sn'), fmt(res.snrNet)],
+    [t('r_dt'), fmt(res.dt * 1000, 1) + ' ms'], [t('r_pol'), (H.sign > 0 ? '+' : '−') + ' / ' + (L.sign > 0 ? '+' : '−')]];
   $('out').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
   draw();
 }
@@ -72,12 +77,12 @@ function drawOrbit() {
   ofc = ofc || document.createElement('canvas'); ofc.width = ofc.height = SZ;
   const og = ofc.getContext('2d'), img = og.createImageData(SZ, SZ); fieldImage(wf, m1, m2, T, SZ, FOV, img.data); og.putImageData(img, 0, 0);
   g.imageSmoothingEnabled = true; g.drawImage(ofc, 0, 0, w, h);
-  const st = orbitAt(wf, m1, m2, T), disc = (x, y, r) => { g.shadowColor = '#000'; g.shadowBlur = 8; g.fillStyle = '#000'; g.beginPath(); g.arc(x, y, Math.max(r, 1.5), 0, 7); g.fill(); g.shadowBlur = 0; g.strokeStyle = '#fff'; g.lineWidth = 1.2; g.stroke(); };
-  if (st.inspiral) bhPositions(st, m1, m2).forEach((p, i) => disc(w / 2 + p.x * S, h / 2 - p.y * S, 2 * ((i ? m2 : m1) / M) * S));
-  else disc(w / 2, h / 2, 2 * (res.mf / M) * S * (1 + 0.12 * Math.cos(wf.p[st.j]) * (wf.a[st.j] / (wf.a[wf.nInsp - 1] || 1))));
-  const phase = st.inspiral ? 'inspiral' : T < wf.t[wf.nInsp] + 0.02 ? 'fusión' : 'ringdown';
-  $('o-out').innerHTML = [['t − t_fusión', fmt(T * 1000, 0) + ' ms'], ['Fase', phase], ['f onda gravitacional', fmt(st.fgw, 0) + ' Hz'],
-    ['Separación', st.inspiral ? fmt(st.r, 1) + ' M = ' + fmt(st.r * M * 1.476625, 0) + ' km' : '—'], ['Velocidad orbital', st.inspiral ? fmt(st.v, 2) + ' c' : '—']]
+  const stt = orbitAt(wf, m1, m2, T), disc = (x, y, r) => { g.shadowColor = '#000'; g.shadowBlur = 8; g.fillStyle = '#000'; g.beginPath(); g.arc(x, y, Math.max(r, 1.5), 0, 7); g.fill(); g.shadowBlur = 0; g.strokeStyle = '#fff'; g.lineWidth = 1.2; g.stroke(); };
+  if (stt.inspiral) bhPositions(stt, m1, m2).forEach((p, i) => disc(w / 2 + p.x * S, h / 2 - p.y * S, 2 * ((i ? m2 : m1) / M) * S));
+  else disc(w / 2, h / 2, 2 * (res.mf / M) * S * (1 + 0.12 * Math.cos(wf.p[stt.j]) * (wf.a[stt.j] / (wf.a[wf.nInsp - 1] || 1))));
+  const phase = t(stt.inspiral ? 'ph_ins' : T < wf.t[wf.nInsp] + 0.02 ? 'ph_mer' : 'ph_rd');
+  $('o-out').innerHTML = [[t('o_t'), fmt(T * 1000, 0) + ' ms'], [t('o_ph'), phase], [t('o_f'), fmt(stt.fgw, 0) + ' Hz'],
+    [t('o_sep'), stt.inspiral ? fmt(stt.r, 1) + ' M = ' + fmt(stt.r * M * 1.476625, 0) + ' km' : '—'], [t('o_v'), stt.inspiral ? fmt(stt.v, 2) + ' c' : '—']]
     .map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
 }
 
@@ -87,7 +92,7 @@ function drawStrain() {
   lanes.forEach((n, li) => {
     const d = res.det[n], y0 = pad.t + li * lh, ym = y0 + lh / 2, amax = Math.max(4, ...d.x.map(Math.abs)) * 1.1, Y = (v) => ym - (v / amax) * (lh / 2 - 4);
     g.strokeStyle = '#26325c'; g.beginPath(); g.moveTo(pad.l, ym); g.lineTo(w - pad.r, ym); g.stroke();
-    g.fillStyle = '#9aa6d1'; g.fillText(n === 'H1' ? 'H1 Hanford' : 'L1 Livingston', pad.l + 6, y0 + 14);
+    g.fillStyle = '#9aa6d1'; g.fillText(t(n === 'H1' ? 'lane_h1' : 'lane_l1'), pad.l + 6, y0 + 14);
     g.fillText('±' + fmt(amax, 0) + 'σ', 6, y0 + 14);
     const t0 = data.detectors[n].t0;
     for (const [arr, col, lw] of [[d.x, '#7dd3fc', 1], [d.fit, '#fb923c', 2]]) {
@@ -99,7 +104,7 @@ function drawStrain() {
   g.strokeStyle = '#ffffff55'; g.setLineDash([4, 4]); g.beginPath(); g.moveTo(X(0), pad.t); g.lineTo(X(0), h - pad.b); g.stroke(); g.setLineDash([]);
   g.fillStyle = '#9aa6d1';
   for (let t = Math.ceil(ta * 10) / 10; t <= tb + 1e-9; t += 0.1) { g.fillText(fmt(t, 1), X(t) - 9, h - 8); }
-  g.fillText('t − t_evento (s)', w - 110, h - 8);
+  g.fillText(t('axis_t'), w - 130, h - 8);
 }
 
 function drawSpec() {

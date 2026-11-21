@@ -1,0 +1,182 @@
+// GW Lab — textos de la interfaz (ES/EN) y utilidades. Añadir un idioma = añadir un objeto en STR.
+// Las cadenas con markup (claves data-i18n-html) son HTML estático escrito aquí, nunca datos externos.
+// Copyright (C) Pedro Sordo Martínez — AGPL-3.0-or-later
+export const STR = {
+  es: {
+    h1sub: "· ondas gravitacionales con datos reales",
+    intro: "Datos públicos de LIGO (GWOSC) de <b>GW150914</b>, la primera detección directa (14-sep-2015). Mueve las masas y comprueba cuánto se parece tu plantilla a lo que oyeron los detectores.",
+    ctl: "Controles",
+    m1: "Masa 1:",
+    m2: "Masa 2:",
+    bpub: "Valores publicados",
+    bpubt: "Medianas de Abbott et al. 2016 en el marco del detector: 38,9 y 31,6 M☉",
+    bopt: "Optimizar con los datos",
+    boptt: "Maximiza el SNR de la red H1+L1",
+    sdata: "🔊 Dato real (H1)",
+    stpl: "🔊 Plantilla",
+    spd: "Velocidad de reproducción",
+    h0: "0 · La fusión, a escala",
+    aorb: "Dos agujeros negros orbitando y fusionándose, con el campo de ondas gravitacionales en espiral",
+    sp1: "cámara muy lenta",
+    sp2: "cámara lenta",
+    sp3: "lenta",
+    sp4: "tiempo real",
+    ospd: "Velocidad de la simulación",
+    tsl: "Instante de la simulación",
+    note0: "Vista cara-sobre. Los discos tienen el radio de Schwarzschild 2Gm/c² a la misma escala que la separación (1PN, coordenadas armónicas). Naranja/azul: signo de h₊ con tiempo retardado; la amplitud decae como 1/r. Los mismos instantes se marcan con una línea blanca en los paneles 1 y 2.",
+    hp1: "1 · Datos blanqueados y plantilla ajustada",
+    astr: "Señal blanqueada de H1 y L1 con la plantilla ajustada",
+    note1: "Unidades: σ del ruido de fondo. Línea naranja = plantilla ajustada por filtro adaptado (amplitud, instante y signo ajustados a los datos; la forma depende solo de m₁ y m₂).",
+    hp2: "2 · Espectrograma: el «chirp»",
+    aspc: "Espectrograma tiempo-frecuencia con la frecuencia predicha por la plantilla",
+    note2: "La frecuencia sube al acercarse la fusión. La línea discontinua es la predicción post-newtoniana (2.5PN) y, tras la fusión, la frecuencia de ringdown del agujero negro final.",
+    hp3: "3 · Sensibilidad del detector (ASD)",
+    aasd: "Densidad espectral de amplitud de H1 y L1",
+    note3: "Ruido en cada frecuencia. El blanqueado divide los datos por esta curva; la banda 35–350 Hz es donde la señal destaca.",
+    hl: "Qué hay detrás (y qué NO es)",
+    l1: "<b>Datos:</b> GWOSC, 4096 Hz, licencia CC BY 4.0. Pipeline: PSD de Welch (mediana) → blanqueado → paso banda 35–350 Hz. Reproducible con <code>scripts/build_data.py</code>.",
+    l2: "<b>Plantilla:</b> inspiral post-newtoniano a 2.5PN (TaylorT4, Blanchet 2014, <i>Living Rev. Relativ.</i> 17, 2) integrado hasta v/c≈0,5 y validado contra TaylorT4 de LALSuite (&lt;0,7 % en f(t)); ringdown con modo cuasinormal 220 (Berti, Cardoso &amp; Will 2006) y masa/espín finales de los ajustes NR de Jiménez-Forteza et al. 2017.",
+    l3: "<b>SNR mostrado:</b> estimación <i>local</i> en esta ventana de 1 s. No sustituye al análisis oficial (SNR de red ≈ 24, Abbott et al. 2016, <i>PRL</i> 116, 061102).",
+    l4: "<b>Marcos de referencia:</b> las masas de los sliders están en el <i>marco del detector</i> (corridas al rojo, z≈0,09). Las de la fuente son ≈1/(1+z) veces menores: 36 y 29 M☉ → 38,9 y 31,6 M☉ aquí (<i>PRL</i> 116, 241102, Tabla I).",
+    l5: "<b>Degeneración:</b> los datos fijan bien la masa de chirp 𝓜; m₁ y m₂ por separado, mucho peor. Prueba «Optimizar» y verás una cresta, no un punto.",
+    l6: "<b>Límites:</b> sin espines ni precesión; fusión y ringdown son una unión didáctica, no relatividad numérica. No sirve para inferencia de parámetros.",
+    foot: "© Pedro Sordo Martínez · AGPL-3.0-or-later · Datos: GWOSC (CC BY 4.0) · <a href=\"https://github.com/amurlaniakea/gw-viz-old\">código</a>",
+    title: "GW Lab · Ondas gravitacionales con datos reales de LIGO",
+    desc: "Laboratorio interactivo: datos reales de GW150914 (GWOSC), filtro adaptado, espectrograma y plantilla post-newtoniana validada contra LALSuite.",
+    st_loading: 'Cargando datos…',
+    st_ok: (s) => `Datos reales cargados: ${s}.`,
+    st_err: (m) => `No se pudieron cargar los datos (${m}). Genera docs/data con scripts/build_data.py.`,
+    st_opt: 'Optimizando…',
+    st_optdone: 'Optimizado sobre el SNR de red (ver la degeneración m₁–m₂).',
+    play: '▶ Reproducir',
+    pause: '⏸ Pausa',
+    r_mc: 'Masa de chirp 𝓜',
+    r_eta: 'Razón simétrica η',
+    r_mf: 'Masa final',
+    r_af: 'Espín final',
+    r_fr: 'f ringdown',
+    r_sh: 'SNR local H1',
+    r_sl: 'SNR local L1',
+    r_sn: 'SNR red (local)',
+    r_dt: 'Retardo L1−H1',
+    r_pol: 'Polaridad H1 / L1',
+    o_t: 't − t_fusión',
+    o_ph: 'Fase',
+    ph_ins: 'inspiral',
+    ph_mer: 'fusión',
+    ph_rd: 'ringdown',
+    o_f: 'f onda gravitacional',
+    o_sep: 'Separación',
+    o_v: 'Velocidad orbital',
+    lane_h1: 'H1 Hanford',
+    lane_l1: 'L1 Livingston',
+    axis_t: 't − t_evento (s)',
+  },
+  en: {
+    h1sub: "· gravitational waves with real data",
+    intro: "Public LIGO data (GWOSC) for <b>GW150914</b>, the first direct detection (14 Sep 2015). Move the masses and see how closely your template matches what the detectors recorded.",
+    ctl: "Controls",
+    m1: "Mass 1:",
+    m2: "Mass 2:",
+    bpub: "Published values",
+    bpubt: "Medians from Abbott et al. 2016 in the detector frame: 38.9 and 31.6 M☉",
+    bopt: "Optimize on the data",
+    boptt: "Maximizes the H1+L1 network SNR",
+    sdata: "🔊 Real data (H1)",
+    stpl: "🔊 Template",
+    spd: "Playback speed",
+    h0: "0 · The merger, to scale",
+    aorb: "Two black holes orbiting and merging, with the gravitational-wave field as a spiral",
+    sp1: "very slow motion",
+    sp2: "slow motion",
+    sp3: "slow",
+    sp4: "real time",
+    ospd: "Simulation speed",
+    tsl: "Simulation time",
+    note0: "Face-on view. Discs have the Schwarzschild radius 2Gm/c², drawn at the same scale as the separation (1PN, harmonic coordinates). Orange/blue: sign of h₊ at the retarded time; the amplitude falls as 1/r. The same instants are marked with a white line in panels 1 and 2.",
+    hp1: "1 · Whitened data and fitted template",
+    astr: "Whitened H1 and L1 signal with the fitted template",
+    note1: "Units: σ of the background noise. Orange line = template fitted by matched filtering (amplitude, time and sign are fitted to the data; its shape depends only on m₁ and m₂).",
+    hp2: "2 · Spectrogram: the “chirp”",
+    aspc: "Time-frequency spectrogram with the frequency predicted by the template",
+    note2: "The frequency rises as the merger approaches. The dashed line is the post-Newtonian (2.5PN) prediction and, after the merger, the ringdown frequency of the final black hole.",
+    hp3: "3 · Detector sensitivity (ASD)",
+    aasd: "Amplitude spectral density of H1 and L1",
+    note3: "Noise at each frequency. Whitening divides the data by this curve; the 35–350 Hz band is where the signal stands out.",
+    hl: "What's behind it (and what it is NOT)",
+    l1: "<b>Data:</b> GWOSC, 4096 Hz, CC BY 4.0 licence. Pipeline: Welch PSD (median) → whitening → 35–350 Hz band-pass. Reproducible with <code>scripts/build_data.py</code>.",
+    l2: "<b>Template:</b> post-Newtonian inspiral at 2.5PN (TaylorT4, Blanchet 2014, <i>Living Rev. Relativ.</i> 17, 2) integrated up to v/c≈0.5 and validated against LALSuite’s TaylorT4 (&lt;0.7 % in f(t)); ringdown with the 220 quasinormal mode (Berti, Cardoso &amp; Will 2006) and final mass/spin from the NR fits of Jiménez-Forteza et al. 2017.",
+    l3: "<b>Displayed SNR:</b> a <i>local</i> estimate in this 1 s window. It does not replace the official analysis (network SNR ≈ 24, Abbott et al. 2016, <i>PRL</i> 116, 061102).",
+    l4: "<b>Reference frames:</b> the slider masses are in the <i>detector frame</i> (redshifted, z≈0.09). Source-frame masses are ≈1/(1+z) times smaller: 36 and 29 M☉ → 38.9 and 31.6 M☉ here (<i>PRL</i> 116, 241102, Table I).",
+    l5: "<b>Degeneracy:</b> the data pin down the chirp mass 𝓜 well; m₁ and m₂ separately, much less so. Try “Optimize” and you will see a ridge, not a point.",
+    l6: "<b>Limits:</b> no spins or precession; merger and ringdown are a didactic splice, not numerical relativity. Not suitable for parameter inference.",
+    foot: "© Pedro Sordo Martínez · AGPL-3.0-or-later · Data: GWOSC (CC BY 4.0) · <a href=\"https://github.com/amurlaniakea/gw-viz-old\">source code</a>",
+    title: "GW Lab · Gravitational waves with real LIGO data",
+    desc: "Interactive lab: real GW150914 data (GWOSC), matched filtering, spectrogram and a post-Newtonian template validated against LALSuite.",
+    st_loading: 'Loading data…',
+    st_ok: (s) => `Real data loaded: ${s}.`,
+    st_err: (m) => `Could not load the data (${m}). Generate docs/data with scripts/build_data.py.`,
+    st_opt: 'Optimizing…',
+    st_optdone: 'Optimized on the network SNR (see the m₁–m₂ degeneracy).',
+    play: '▶ Play',
+    pause: '⏸ Pause',
+    r_mc: 'Chirp mass 𝓜',
+    r_eta: 'Symmetric mass ratio η',
+    r_mf: 'Final mass',
+    r_af: 'Final spin',
+    r_fr: 'Ringdown f',
+    r_sh: 'Local SNR H1',
+    r_sl: 'Local SNR L1',
+    r_sn: 'Network SNR (local)',
+    r_dt: 'L1−H1 delay',
+    r_pol: 'H1 / L1 polarity',
+    o_t: 't − t_merger',
+    o_ph: 'Phase',
+    ph_ins: 'inspiral',
+    ph_mer: 'merger',
+    ph_rd: 'ringdown',
+    o_f: 'Gravitational-wave f',
+    o_sep: 'Separation',
+    o_v: 'Orbital speed',
+    lane_h1: 'H1 Hanford',
+    lane_l1: 'L1 Livingston',
+    axis_t: 't − t_event (s)',
+  },
+};
+
+let lang = 'es';
+export const getLang = () => lang;
+export const languages = () => Object.keys(STR);
+
+/** Traduce una clave (con args si el texto es una función); cae al español y luego a la clave. */
+export function t(key, ...args) {
+  const s = STR[lang]?.[key] ?? STR.es[key] ?? key;
+  return typeof s === 'function' ? s(...args) : s;
+}
+
+/** Idioma inicial: el guardado, si no el del navegador, si no español. */
+export function initLang() {
+  let l = null;
+  try { l = localStorage.getItem('gwlab-lang'); } catch { /* sin almacenamiento */ }
+  if (!l) l = ((typeof navigator !== 'undefined' && navigator.language) || 'es').slice(0, 2).toLowerCase();
+  lang = STR[l] ? l : 'es';
+  return lang;
+}
+
+export function setLang(l) {
+  lang = STR[l] ? l : 'es';
+  try { localStorage.setItem('gwlab-lang', lang); } catch { /* sin almacenamiento */ }
+  apply();
+}
+
+/** Aplica el idioma actual a todo el DOM marcado con data-i18n, data-i18n-html y data-i18n-attr. */
+export function apply(root = document) {
+  document.documentElement.lang = lang;
+  document.title = t('title');
+  root.querySelector('meta[name="description"]')?.setAttribute('content', t('desc'));
+  root.querySelectorAll('[data-i18n]').forEach((e) => { e.textContent = t(e.dataset.i18n); });
+  root.querySelectorAll('[data-i18n-html]').forEach((e) => { e.innerHTML = t(e.dataset.i18nHtml); });
+  root.querySelectorAll('[data-i18n-attr]').forEach((e) => e.dataset.i18nAttr.split(';').forEach((p) => {
+    const [a, k] = p.split(':'); e.setAttribute(a, t(k));
+  }));
+}

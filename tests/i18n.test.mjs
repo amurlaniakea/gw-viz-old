@@ -1,0 +1,43 @@
+// Comprueba que ES y EN están completos y que el HTML por defecto (español) coincide con el diccionario.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { STR } from '../docs/js/i18n.js';
+
+const read = (p) => readFileSync(new URL(p, import.meta.url), 'utf8');
+const html = read('../docs/index.html'), app = read('../docs/js/app.js');
+const keys = (l) => Object.keys(STR[l]).sort();
+
+test('ES y EN tienen exactamente las mismas claves, sin textos vacíos', () => {
+  assert.deepEqual(keys('en'), keys('es'));
+  for (const l of Object.keys(STR)) for (const k of keys(l)) {
+    const v = STR[l][k]; assert.ok(typeof v === 'function' || String(v).trim().length > 0, `${l}.${k} vacío`);
+  }
+});
+
+test('todas las claves usadas en index.html y app.js existen', () => {
+  const used = new Set();
+  for (const m of html.matchAll(/data-i18n(?:-html)?="([^"]+)"/g)) used.add(m[1]);
+  for (const m of html.matchAll(/data-i18n-attr="([^"]+)"/g)) m[1].split(';').forEach((p) => used.add(p.split(':')[1]));
+  for (const m of app.matchAll(/\bt\('([^']+)'/g)) used.add(m[1]);
+  for (const m of app.matchAll(/set(?:Status)\('([^']+)'/g)) used.add(m[1]);
+  for (const k of used) assert.ok(k in STR.es && k in STR.en, `falta la clave ${k}`);
+  assert.ok(used.size > 40);
+});
+
+test('el HTML por defecto es idéntico al diccionario español', () => {
+  const re = /<(\w+)([^>]*?)\sdata-i18n(?:-html)?="([^"]+)"([^>]*)>([\s\S]*?)<\/\1>/g; let n = 0;
+  for (const m of html.matchAll(re)) { n++; assert.equal(m[5], STR.es[m[3]], `clave ${m[3]}`); }
+  assert.ok(n >= 28, `solo ${n} elementos`);
+});
+
+test('el inglés no deja restos de español (salvo nombres propios) y difiere del español', () => {
+  const same = new Set(['ph_ins', 'ph_rd', 'lane_h1', 'lane_l1']);
+  for (const k of keys('en')) {
+    const en = STR.en[k], es = STR.es[k]; if (typeof en === 'function') continue;
+    const clean = en.replace(/Jiménez-Forteza|Martínez/g, '');
+    assert.ok(!/[áéíóúñ¿¡«»]/.test(clean), `acentos españoles en en.${k}: ${en}`);
+    if (!same.has(k)) assert.notEqual(en, es, `en.${k} sin traducir`);
+  }
+  assert.match(STR.en.st_ok('X'), /Real data loaded: X/);
+});
