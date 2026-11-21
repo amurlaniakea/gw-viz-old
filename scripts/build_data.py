@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Genera docs/data/gw150914.json con datos REALES de GWOSC (H1 y L1), blanqueados.
 
-Uso (en tu máquina, con internet):   python3 scripts/build_data.py
-Requiere: numpy scipy gwpy   (pip install gwpy)
+Uso con internet (gwpy):      python3 scripts/build_data.py
+Uso con archivos locales:     python3 scripts/build_data.py --local ~/projects/gw-viz/data/raw
+   (espera GW150914_H1.hdf5 y GW150914_L1.hdf5, formato estándar de GWOSC)
+Requiere: numpy scipy h5py (+ gwpy solo si descargas)
 
 Pipeline (estándar GWOSC): 32 s de datos -> PSD de Welch (mediana, 4 s) -> blanqueado
 en frecuencia con ventana Tukey -> paso banda 35–350 Hz -> normalización a σ del fondo
@@ -50,6 +52,28 @@ def process(x, fs, t0_gps, event_gps=GPS_EVENT, band=BAND, win=WIN):
     return t[sel], xw[sel], (f, np.sqrt(p))
 
 
+def read_local(path, event_gps=GPS_EVENT, half=16, fs=FS):
+    """Lee solo 2*half s alrededor del evento de un HDF5 de GWOSC. Devuelve (x, t0_gps, dq)."""
+    import h5py
+    with h5py.File(path, "r") as f:
+        d = f["strain/Strain"]
+        x0, dx = float(d.attrs["Xstart"]), float(d.attrs["Xspacing"])
+        if abs(1 / dx - fs) > 1e-6:
+            raise ValueError(f"{path}: fs={1 / dx} Hz, se esperaban {fs}")
+        i0, n = int(round((event_gps - half - x0) / dx)), int(2 * half * fs)
+        if i0 < 0 or i0 + n > d.shape[0]:
+            raise ValueError(f"{path}: el archivo no cubre GPS {event_gps}±{half} s")
+        x = np.asarray(d[i0:i0 + n], dtype=float)
+        dq = None
+        if "quality/simple/DQmask" in f:
+            q = f["quality/simple/DQmask"]
+            j0 = int(event_gps - half - float(q.attrs["Xstart"]))
+            dq = sorted({int(v) for v in q[j0:j0 + 2 * half]})
+    if not np.all(np.isfinite(x)):
+        raise ValueError(f"{path}: hay NaN/inf en los datos")
+    return x, x0 + i0 * dx, dq
+
+
 def log_asd(f, asd, n=220, lo=20.0, hi=2000.0):
     fg = np.geomspace(lo, hi, n)
     return fg, np.exp(np.interp(np.log(fg), np.log(f[1:]), np.log(asd[1:])))
@@ -58,19 +82,26 @@ def log_asd(f, asd, n=220, lo=20.0, hi=2000.0):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="docs/data/gw150914.json")
+    ap.add_argument("--local", metavar="DIR", help="carpeta con GW150914_H1.hdf5 y GW150914_L1.hdf5 (sin red)")
     a = ap.parse_args()
-    from gwpy.timeseries import TimeSeries
+    if not a.local:
+        from gwpy.timeseries import TimeSeries
     out = {"event": "GW150914", "gps": GPS_EVENT, "fs": FS, "band_hz": list(BAND),
            "window_s": list(WIN), "units": "sigma del fondo (blanqueado)",
-           "source": "GWOSC (CC BY 4.0), 4 kHz", "detectors": {},
+           "source": "GWOSC (CC BY 4.0), 4 kHz" + (" — archivos locales" if a.local else ""), "detectors": {},
            "meta": {   # Abbott et al., PRL 116, 061102 (2016)
                "m1": 36, "m2": 29, "mf": 62, "af": 0.67, "e_rad_msun": 3.0,
                "dist_mpc": 410, "snr_net": 24,
                "ref": "Abbott et al., PRL 116, 061102 (2016), doi:10.1103/PhysRevLett.116.061102"}}
     for det in ("H1", "L1"):
-        ts = TimeSeries.fetch_open_data(det, GPS_EVENT - 16, GPS_EVENT + 16, sample_rate=FS, cache=True)
-        x = np.asarray(ts.value, dtype=float)
-        t, w, (f, asd) = process(x, FS, float(ts.t0.value))
+        if a.local:
+            import os
+            x, t0, dq = read_local(os.path.join(os.path.expanduser(a.local), f"GW150914_{det}.hdf5"))
+            print(det, "DQmask (valores en los 32 s):", dq)
+        else:
+            ts = TimeSeries.fetch_open_data(det, GPS_EVENT - 16, GPS_EVENT + 16, sample_rate=FS, cache=True)
+            x, t0 = np.asarray(ts.value, dtype=float), float(ts.t0.value)
+        t, w, (f, asd) = process(x, FS, t0)
         fg, ag = log_asd(f, asd)
         out["detectors"][det] = {"t0": float(t[0]), "whitened": [round(float(v), 3) for v in w],
                                  "asd_f": [round(float(v), 2) for v in fg],
