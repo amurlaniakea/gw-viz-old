@@ -40,3 +40,7 @@ docs/*.png
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Entorno local
+.venv/
+node_modules/
